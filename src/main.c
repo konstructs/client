@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include "client.h"
 #include "config.h"
 #include "cube.h"
@@ -1303,6 +1304,8 @@ int worker_run(void *arg) {
         mtx_lock(&worker->mtx);
         worker->state = WORKER_DONE;
         mtx_unlock(&worker->mtx);
+
+        if (g->fps < 20) sleep(1);
     }
     return 0;
 }
@@ -2643,6 +2646,7 @@ int main(int argc, char **argv) {
             dt = MIN(dt, 0.2);
             dt = MAX(dt, 0.0);
             previous = now;
+            g->fps = fps.fps;
 
             // HANDLE MOUSE INPUT //
             handle_mouse_input();

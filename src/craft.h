@@ -137,6 +137,7 @@ typedef struct {
     int blocks_recv;
     char *chunk_buffer;
     int chunk_buffer_size;
+    double fps;
 } Model;
 
 // in main.c
