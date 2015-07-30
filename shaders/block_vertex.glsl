@@ -6,6 +6,7 @@ uniform float fog_distance;
 uniform int ortho;
 uniform vec4 chunk;
 uniform mat4 rotation;
+uniform float timer;
 
 attribute vec4 position;
 attribute vec3 normal;
@@ -23,6 +24,21 @@ const vec3 light_direction = normalize(vec3(-1.0, 1.0, -1.0));
 
 void main() {
     vec4 local_position = rotation * (position + chunk);
+
+    // Water waves
+    if (uv.s > 1 - 1.0/8.0 && uv.t < 1 - 1.0/8.0) {
+        local_position.y = local_position.y
+            + sin(0.5 * local_position.x + timer * 50)/4
+            + sin(0.5 * local_position.z + timer * 40)/4
+            + 0.5;
+    }
+
+    // Plants
+    if (uv.t > 0.2 && uv.t < 0.3) {
+        local_position.x = local_position.x + sin(0.1 * local_position.x + timer * 600)/16;
+        local_position.z = local_position.z + sin(0.1 * local_position.z + timer * 800)/18;
+    }
+
     gl_Position = matrix * local_position;
     fragment_uv = uv.xy;
     fragment_ao = 0.3 + (1.0 - uv.z) * 0.7;
