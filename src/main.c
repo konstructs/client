@@ -4,6 +4,7 @@
 #ifdef _WIN32
   #include <winsock2.h>
   #include <windows.h>
+  #include <Dwmapi.h>
 #else
   #include <arpa/inet.h>
 #endif
@@ -2438,6 +2439,16 @@ void main_connect() {
 }
 
 int main(int argc, char **argv) {
+
+#ifdef _WIN32
+	// Disable DWM Composition becasue of incompatibility with glfwSwapBuffers
+	HRESULT hr = S_OK;
+	hr = DwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
+	if (!SUCCEEDED(hr))
+	{
+		SHOWERROR("Failed to disable DWM");
+	}
+#endif
 
     init_inventory();
 
