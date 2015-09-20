@@ -18,10 +18,6 @@
 #define WORKER_BUSY 1
 #define WORKER_DONE 2
 
-#define OSCILLATION_TYPE_NONE 0
-#define OSCILLATION_TYPE_OCEAN 1
-#define OSCILLATION_TYPE_PLANT 2
-
 #include "tinycthread.h"
 #include "util.h"
 #include "matrix.h"

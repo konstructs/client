@@ -8,7 +8,7 @@ void make_cube_faces(
     float *data, float ao[6][4], float light[6][4],
     int left, int right, int top, int bottom, int front, int back,
     int wleft, int wright, int wtop, int wbottom, int wfront, int wback,
-    float x, float y, float z, float n)
+    float x, float y, float z, float n, float oscillation)
 {
     static const float positions[6][4][3] = {
         {{-1, -1, -1}, {-1, -1, +1}, {-1, +1, -1}, {-1, +1, +1}},
@@ -71,6 +71,7 @@ void make_cube_faces(
             *(d++) = normals[i][0];
             *(d++) = normals[i][1];
             *(d++) = normals[i][2];
+            *(d++) = oscillation;
             *(d++) = du + (uvs[i][j][0] ? b : a);
             *(d++) = dv + (uvs[i][j][1] ? b : a);
             *(d++) = ao[i][j];
@@ -90,11 +91,12 @@ void make_cube(
     int wbottom = blocks[w][3];
     int wfront = blocks[w][4];
     int wback = blocks[w][5];
+    float oscillation = oscillation_type[w];
     make_cube_faces(
         data, ao, light,
         left, right, top, bottom, front, back,
         wleft, wright, wtop, wbottom, wfront, wback,
-        x, y, z, n);
+        x, y, z, n, oscillation);
 }
 
 void make_plant(
@@ -140,6 +142,7 @@ void make_plant(
             *(d++) = normals[i][0];
             *(d++) = normals[i][1];
             *(d++) = normals[i][2];
+            *(d++) = oscillation_type[w];
             *(d++) = du + (uvs[i][j][0] ? b : a);
             *(d++) = dv + (uvs[i][j][1] ? b : a);
             *(d++) = ao;
@@ -151,10 +154,10 @@ void make_plant(
     mat_identity(ma);
     mat_rotate(mb, 0, 1, 0, RADIANS(rotation));
     mat_multiply(ma, mb, ma);
-    mat_apply(data, ma, 24, 3, 10);
+    mat_apply(data, ma, 24, 3, 11);
     mat_translate(mb, px, py, pz);
     mat_multiply(ma, mb, ma);
-    mat_apply(data, ma, 24, 0, 10);
+    mat_apply(data, ma, 24, 0, 11);
 }
 
 void make_player(
@@ -174,7 +177,7 @@ void make_player(
         data, ao, light,
         1, 1, 1, 1, 1, 1,
         226, 224, 241, 209, 225, 227,
-        0, 0, 0, 0.4);
+        0, 0, 0, 0.4, OSCILLATION_TYPE_NONE);
     float ma[16];
     float mb[16];
     mat_identity(ma);
@@ -182,10 +185,10 @@ void make_player(
     mat_multiply(ma, mb, ma);
     mat_rotate(mb, cosf(rx), 0, sinf(rx), -ry);
     mat_multiply(ma, mb, ma);
-    mat_apply(data, ma, 36, 3, 10);
+    mat_apply(data, ma, 36, 3, 11);
     mat_translate(mb, x, y, z);
     mat_multiply(ma, mb, ma);
-    mat_apply(data, ma, 36, 0, 10);
+    mat_apply(data, ma, 36, 0, 11);
 }
 
 void make_cube_wireframe(float *data, float x, float y, float z, float n) {

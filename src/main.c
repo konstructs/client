@@ -234,7 +234,7 @@ GLuint gen_sky_buffer() {
 }
 
 GLuint gen_cube_buffer(float x, float y, float z, float n, int w) {
-    GLfloat *data = malloc_faces(10, 6);
+    GLfloat *data = malloc_faces(11, 6);
     float ao[6][4] = {0};
     float light[6][4] = {
         {0.5, 0.5, 0.5, 0.5},
@@ -245,21 +245,21 @@ GLuint gen_cube_buffer(float x, float y, float z, float n, int w) {
         {0.5, 0.5, 0.5, 0.5}
     };
     make_cube(data, ao, light, 1, 1, 1, 1, 1, 1, x, y, z, n, w);
-    return gen_faces(10, 6, data);
+    return gen_faces(11, 6, data);
 }
 
 GLuint gen_plant_buffer(float x, float y, float z, float n, int w) {
-    GLfloat *data = malloc_faces(10, 4);
+    GLfloat *data = malloc_faces(11, 4);
     float ao = 0;
     float light = 1;
     make_plant(data, ao, light, x, y, z, n, w, 45);
-    return gen_faces(10, 4, data);
+    return gen_faces(11, 4, data);
 }
 
 GLuint gen_player_buffer(float x, float y, float z, float rx, float ry) {
-    GLfloat *data = malloc_faces(10, 6);
+    GLfloat *data = malloc_faces(11, 6);
     make_player(data, x, y, z, rx, ry);
-    return gen_faces(10, 6, data);
+    return gen_faces(11, 6, data);
 }
 
 GLuint gen_text_buffer(float x, float y, float n, char *text) {
@@ -278,11 +278,11 @@ void draw_triangles_3d_ao(Attrib *attrib, GLuint buffer, int count) {
     glEnableVertexAttribArray(attrib->normal);
     glEnableVertexAttribArray(attrib->uv);
     glVertexAttribPointer(attrib->position, 3, GL_FLOAT, GL_FALSE,
-        sizeof(GLfloat) * 10, 0);
-    glVertexAttribPointer(attrib->normal, 3, GL_FLOAT, GL_FALSE,
-        sizeof(GLfloat) * 10, (GLvoid *)(sizeof(GLfloat) * 3));
+        sizeof(GLfloat) * 11, 0);
+    glVertexAttribPointer(attrib->normal, 4, GL_FLOAT, GL_FALSE,
+        sizeof(GLfloat) * 11, (GLvoid *)(sizeof(GLfloat) * 3));
     glVertexAttribPointer(attrib->uv, 4, GL_FLOAT, GL_FALSE,
-        sizeof(GLfloat) * 10, (GLvoid *)(sizeof(GLfloat) * 6));
+        sizeof(GLfloat) * 11, (GLvoid *)(sizeof(GLfloat) * 7));
     glDrawArrays(GL_TRIANGLES, 0, count);
     glDisableVertexAttribArray(attrib->position);
     glDisableVertexAttribArray(attrib->normal);
@@ -1062,7 +1062,7 @@ void compute_chunk(WorkerItem *item) {
     } END_CHUNK_FOR_EACH;
 
     // generate geometry
-    GLfloat *data = malloc_faces(10, faces);
+    GLfloat *data = malloc_faces(11, faces);
     int offset = 0;
     CHUNK_FOR_EACH(blocks, ex, ey, ez, ew) {
         if (ew <= 0) {
@@ -1124,7 +1124,7 @@ void compute_chunk(WorkerItem *item) {
                 f1, f2, f3, f4, f5, f6,
                 ex, ey, ez, 0.5, ew);
         }
-        offset += total * 60;
+        offset += total * 66;
     } END_CHUNK_FOR_EACH;
 
     free(opaque);
@@ -1137,7 +1137,7 @@ void compute_chunk(WorkerItem *item) {
 void generate_chunk(Chunk *chunk, WorkerItem *item) {
     chunk->faces = item->faces;
     del_buffer(chunk->buffer);
-    chunk->buffer = gen_faces(10, item->faces, item->data);
+    chunk->buffer = gen_faces(11, item->faces, item->data);
 }
 
 void gen_chunk_buffer(Chunk *chunk) {
