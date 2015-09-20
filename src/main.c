@@ -1994,13 +1994,22 @@ void parse_buffer(Packet packet) {
 
             {
                 int w, obstacle, transparent, left, right, top, bottom, front, back;
-                char shape[16];
-                if(sscanf(line, "W,%d,%15[^,],%d,%d,%d,%d,%d,%d,%d,%d",
-                          &w, shape, &obstacle, &transparent, &left, &right,
-                          &top, &bottom, &front, &back) == 10) {
+                char shape[16], oscillation[16];
+                if(sscanf(line, "W,%d,%15[^,],%d,%d,%15[^,],%d,%d,%d,%d,%d,%d",
+                          &w, shape, &obstacle, &transparent, oscillation,
+                          &left, &right, &top, &bottom, &front, &back) == 11) {
                     is_plant[w] = strncmp(shape, "plant", 16) == 0;
                     is_obstacle[w] = obstacle;
                     is_transparent[w] = transparent;
+
+                    if (strncmp(oscillation, "ocean", 16) == 0) {
+                        oscillation_type[w] = OSCILLATION_TYPE_OCEAN;
+                    } else if (strncmp(oscillation, "plant", 16) == 0) {
+                        oscillation_type[w] = OSCILLATION_TYPE_PLANT;
+                    } else {
+                        oscillation_type[w] = OSCILLATION_TYPE_NONE;
+                    }
+
                     blocks[w][0] = left;
                     blocks[w][1] = right;
                     blocks[w][2] = top;
