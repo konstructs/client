@@ -28,7 +28,10 @@ void main() {
         global_position.y = global_position.y
             + sin(0.5 * global_position.x + timer * pi * 150)/4
             + sin(0.5 * global_position.z + timer * pi * 10)/4
-            + 0.5;
+            - 0.5;
+    } else if (normal.w == 2.0) {
+        global_position.x = global_position.x + sin(0.1 * global_position.x + timer * 600)/16;
+        global_position.z = global_position.z + sin(0.1 * global_position.z + timer * 800)/18;
     }
 
     gl_Position = matrix * global_position;

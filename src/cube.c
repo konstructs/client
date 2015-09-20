@@ -71,7 +71,7 @@ void make_cube_faces(
             *(d++) = normals[i][0];
             *(d++) = normals[i][1];
             *(d++) = normals[i][2];
-            *(d++) = oscillation;
+            *(d++) = positions[i][j][1] > 0 ? oscillation : OSCILLATION_TYPE_NONE;
             *(d++) = du + (uvs[i][j][0] ? b : a);
             *(d++) = dv + (uvs[i][j][1] ? b : a);
             *(d++) = ao[i][j];
@@ -142,7 +142,7 @@ void make_plant(
             *(d++) = normals[i][0];
             *(d++) = normals[i][1];
             *(d++) = normals[i][2];
-            *(d++) = oscillation_type[w];
+            *(d++) = positions[i][j][1] > 0 ? oscillation_type[w] : OSCILLATION_TYPE_NONE;
             *(d++) = du + (uvs[i][j][0] ? b : a);
             *(d++) = dv + (uvs[i][j][1] ? b : a);
             *(d++) = ao;
