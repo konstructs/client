@@ -554,6 +554,65 @@ int chunk_visible(float planes[6][4], int p, int q, int k) {
     return 1;
 }
 
+int chunk_culled(Chunk *chunk, float x, float y, float z) {
+    int p = chunked(x);
+    int q = chunked(z);
+    int k = chunked(y);
+
+
+    if(chunk->k < k &&
+       IS(chunk->opaque_neighbours, ABOVE) &&
+       IS(chunk->opaque_neighbours, LEFT) &&
+       IS(chunk->opaque_neighbours, RIGHT) &&
+       IS(chunk->opaque_neighbours, FRONT) &&
+       IS(chunk->opaque_neighbours, BACK)) {
+        /* Chunk is in below of player and all sides except below are culled */
+        return 1;
+    } else if(chunk->k > k &&
+              IS(chunk->opaque_neighbours, BELOW) &&
+              IS(chunk->opaque_neighbours, LEFT) &&
+              IS(chunk->opaque_neighbours, RIGHT) &&
+              IS(chunk->opaque_neighbours, FRONT) &&
+              IS(chunk->opaque_neighbours, BACK)) {
+        /* Chunk is in above of player and all sides except above are culled */
+        return 1;
+    } else if(chunk->p < p &&
+              IS(chunk->opaque_neighbours, BELOW) &&
+              IS(chunk->opaque_neighbours, ABOVE) &&
+              IS(chunk->opaque_neighbours, RIGHT) &&
+              IS(chunk->opaque_neighbours, FRONT) &&
+              IS(chunk->opaque_neighbours, BACK)) {
+        /* Chunk is in left of player and all sides except left are culled */
+        return 1;
+    } else if(chunk->p > p &&
+              IS(chunk->opaque_neighbours, BELOW) &&
+              IS(chunk->opaque_neighbours, ABOVE) &&
+              IS(chunk->opaque_neighbours, LEFT) &&
+              IS(chunk->opaque_neighbours, FRONT) &&
+              IS(chunk->opaque_neighbours, BACK)) {
+        /* Chunk is in right of player and all sides except right are culled */
+        return 1;
+    } else if(chunk->q < q &&
+              IS(chunk->opaque_neighbours, BELOW) &&
+              IS(chunk->opaque_neighbours, ABOVE) &&
+              IS(chunk->opaque_neighbours, LEFT) &&
+              IS(chunk->opaque_neighbours, RIGHT) &&
+              IS(chunk->opaque_neighbours, BACK)) {
+        /* Chunk is in front of player and all sides except front are culled */
+        return 1;
+    } else if(chunk->q > q &&
+              IS(chunk->opaque_neighbours, BELOW) &&
+              IS(chunk->opaque_neighbours, ABOVE) &&
+              IS(chunk->opaque_neighbours, LEFT) &&
+              IS(chunk->opaque_neighbours, RIGHT) &&
+              IS(chunk->opaque_neighbours, FRONT)) {
+        /* Chunk is in behind of player and all sides except behind are culled */
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 int _hit_test(
     Chunk *chunk, float max_distance, int previous,
     float x, float y, float z,
@@ -623,7 +682,7 @@ int hit_test(
 int hit_test_face(Player *player, int *x, int *y, int *z, int *face) {
     State *s = &player->state;
     int w = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, x, y, z);
-    if (is_obstacle[w]) {
+    if (IS(block_type[w], OBSTACLE)) {
         int hx, hy, hz;
         hit_test(1, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
         int dx = hx - *x;
@@ -674,24 +733,30 @@ int collide(int height, float *x, float *y, float *z) {
                     continue;
                 }
                 for (int dy = 0; dy < height; dy++) {
-                    if (px < -pad && is_obstacle[chunk_get(chunk, nx - 1, ny - dy, nz)]) {
+                    if (px < -pad &&
+                        IS(block_type[chunk_get(chunk, nx - 1, ny - dy, nz)], OBSTACLE)) {
                         *x = nx - pad;
                     }
-                    if (px > pad && is_obstacle[chunk_get(chunk, nx + 1, ny - dy, nz)]) {
+                    if (px > pad &&
+                        IS(block_type[chunk_get(chunk, nx + 1, ny - dy, nz)], OBSTACLE)) {
                         *x = nx + pad;
                     }
-                    if (py < -pad && is_obstacle[chunk_get(chunk, nx, ny - dy - 1, nz)]) {
+                    if (py < -pad &&
+                        IS(block_type[chunk_get(chunk, nx, ny - dy - 1, nz)], OBSTACLE)) {
                         *y = ny - pad;
                         result = 1;
                     }
-                    if (py > pad && is_obstacle[chunk_get(chunk, nx, ny - dy + 1, nz)]) {
+                    if (py > pad &&
+                        IS(block_type[chunk_get(chunk, nx, ny - dy + 1, nz)], OBSTACLE)) {
                         *y = ny + pad;
                         result = 1;
                     }
-                    if (pz < -pad && is_obstacle[chunk_get(chunk, nx, ny - dy, nz - 1)]) {
+                    if (pz < -pad &&
+                        IS(block_type[chunk_get(chunk, nx, ny - dy, nz - 1)], OBSTACLE)) {
                         *z = nz - pad;
                     }
-                    if (pz > pad && is_obstacle[chunk_get(chunk, nx, ny - dy, nz + 1)]) {
+                    if (pz > pad &&
+                        IS(block_type[chunk_get(chunk, nx, ny - dy, nz + 1)], OBSTACLE)) {
                         *z = nz + pad;
                     }
                 }
@@ -766,45 +831,61 @@ void occlusion(
 #define XYZ(x, y, z) ((y) * XZ_SIZE * XZ_SIZE + (x) * XZ_SIZE + (z))
 #define XZ(x, z) ((x) * XZ_SIZE + (z))
 
-void compute_chunk(WorkerItem *item) {
-    char *opaque = (char *)calloc(XZ_SIZE * XZ_SIZE * XZ_SIZE, sizeof(char));
-    char *highest = (char *)calloc(XZ_SIZE * XZ_SIZE, sizeof(char));
+static void update_blocks_and_highest(int x, int y, int z, int w,
+                                      char *blocks, char *highest) {
+    blocks[XYZ(x, y, z)] = w;
+    if (!IS(block_type[w], TRANSPARENT)) {
+        highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
+    }
 
+}
+
+static char w_t(char *b, int x, int y, int z) {
+    return block_type[b[XYZ(x, y, z)]];
+}
+
+static char render_face(int self, int w) {
+    if(IS_STATE(block_type[self], FLUID) && self == w) {
+        return 0;
+    } else {
+        return IS(block_type[w], TRANSPARENT);
+    }
+}
+
+void compute_chunk(WorkerItem *item) {
+    char *blocks = (char *)calloc(XZ_SIZE * XZ_SIZE * XZ_SIZE, sizeof(char));
+    char *highest = (char *)calloc(XZ_SIZE * XZ_SIZE, sizeof(char));
+    char opaque_neighbours = 0x3F; /* All neighbours are initially assumed opaque */
     int ox = - CHUNK_SIZE - 1;
     int oy = - CHUNK_SIZE - 1;
     int oz = - CHUNK_SIZE - 1;
 
 
-    /* Populate the opaque array with the chunk itself */
-    char *blocks = item->neighbour_blocks[1][1][1];
+    /* Populate the blocks array with the chunk itself */
+    char *chunk_blocks = item->neighbour_blocks[1][1][1];
 
-    CHUNK_FOR_EACH(blocks, ex, ey, ez, ew) {
+    CHUNK_FOR_EACH(chunk_blocks, ex, ey, ez, ew) {
         int x = ex - ox;
         int y = ey - oy;
         int z = ez - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-        }
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
     } END_CHUNK_FOR_EACH;
 
     /* With the six sides of the chunk */
 
-    /* Populate the opaque array with the chunk below */
+    /* Populate the blocks array with the chunk below */
     CHUNK_FOR_EACH_XZ(item->neighbour_blocks[1][1][0], CHUNK_SIZE - 1, ex, ey, ez, ew) {
         int x = ex - ox;
         int y = ey - CHUNK_SIZE - oy;
         int z = ez - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
+        if(IS(block_type[ew], TRANSPARENT)) {
+            opaque_neighbours = UNSET(opaque_neighbours, BELOW);
         }
     } END_CHUNK_FOR_EACH_2D;
 
 
-    /* Populate the opaque array with the chunk above
+    /* Populate the blocks array with the chunk above
      * The shading requires additional 8 blocks
      */
     for(int i = 0; i < 8; i++) {
@@ -813,61 +894,57 @@ void compute_chunk(WorkerItem *item) {
             int y = ey + CHUNK_SIZE - oy;
             int z = ez - oz;
             int w = ew;
-            opaque[XYZ(x, y, z)] = !is_transparent[w];
-            if (opaque[XYZ(x, y, z)]) {
-                highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
+            update_blocks_and_highest(x, y, z, ew, blocks, highest);
+            if(i == 0 && IS(block_type[ew], TRANSPARENT)) {
+                opaque_neighbours = UNSET(opaque_neighbours, ABOVE);
             }
         } END_CHUNK_FOR_EACH_2D;
     }
 
-    /* Populate the opaque array with the chunk left */
+    /* Populate the blocks array with the chunk left */
     CHUNK_FOR_EACH_YZ(item->neighbour_blocks[0][1][1], CHUNK_SIZE - 1, ex, ey, ez, ew) {
         int x = ex - CHUNK_SIZE - ox;
         int y = ey - oy;
         int z = ez - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
+        if(IS(block_type[ew], TRANSPARENT)) {
+            opaque_neighbours = UNSET(opaque_neighbours, LEFT);
         }
     } END_CHUNK_FOR_EACH_2D;
 
 
-    /* Populate the opaque array with the chunk right */
+    /* Populate the blocks array with the chunk right */
     CHUNK_FOR_EACH_YZ(item->neighbour_blocks[2][1][1], 0, ex, ey, ez, ew) {
         int x = ex + CHUNK_SIZE - ox;
         int y = ey - oy;
         int z = ez - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
+        if(IS(block_type[ew], TRANSPARENT)) {
+            opaque_neighbours = UNSET(opaque_neighbours, RIGHT);
         }
     } END_CHUNK_FOR_EACH_2D;
 
 
-    /* Populate the opaque array with the chunk front */
+    /* Populate the blocks array with the chunk front */
     CHUNK_FOR_EACH_XY(item->neighbour_blocks[1][0][1], CHUNK_SIZE - 1, ex, ey, ez, ew) {
         int x = ex - ox;
         int y = ey - oy;
         int z = ez - CHUNK_SIZE - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
+        if(IS(block_type[ew], TRANSPARENT)) {
+            opaque_neighbours = UNSET(opaque_neighbours, FRONT);
         }
     } END_CHUNK_FOR_EACH_2D;
 
 
-    /* Populate the opaque array with the chunk back */
+    /* Populate the blocks array with the chunk back */
     CHUNK_FOR_EACH_XY(item->neighbour_blocks[1][2][1], 0, ex, ey, ez, ew) {
         int x = ex - ox;
         int y = ey - oy;
         int z = ez + CHUNK_SIZE - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
+        if(IS(block_type[ew], TRANSPARENT)) {
+            opaque_neighbours = UNSET(opaque_neighbours, BACK);
         }
     } END_CHUNK_FOR_EACH_2D;
 
@@ -876,54 +953,38 @@ void compute_chunk(WorkerItem *item) {
      */
 
     for(int i = 0; i < 8; i++) {
-        /* Populate the opaque array with the chunk above-left */
+        /* Populate the blocks array with the chunk above-left */
         CHUNK_FOR_EACH_Z(item->neighbour_blocks[0][1][2], CHUNK_SIZE - 1, i, ex, ey, ez, ew) {
             int x = ex - CHUNK_SIZE - ox;
             int y = ey + CHUNK_SIZE - oy;
             int z = ez - oz;
-            int w = ew;
-            opaque[XYZ(x, y, z)] = !is_transparent[w];
-            if (opaque[XYZ(x, y, z)]) {
-                highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-            }
+            update_blocks_and_highest(x, y, z, ew, blocks, highest);
         } END_CHUNK_FOR_EACH_1D;
 
-        /* Populate the opaque array with the chunk above-right */
+        /* Populate the blocks array with the chunk above-right */
         CHUNK_FOR_EACH_Z(item->neighbour_blocks[2][1][2], 0, i, ex, ey, ez, ew) {
             int x = ex + CHUNK_SIZE - ox;
             int y = ey + CHUNK_SIZE - oy;
             int z = ez - oz;
-            int w = ew;
-            opaque[XYZ(x, y, z)] = !is_transparent[w];
-            if (opaque[XYZ(x, y, z)]) {
-                highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-            }
+            update_blocks_and_highest(x, y, z, ew, blocks, highest);
         } END_CHUNK_FOR_EACH_1D;
 
-        /* Populate the opaque array with the chunk above-front */
+        /* Populate the blocks array with the chunk above-front */
         CHUNK_FOR_EACH_X(item->neighbour_blocks[1][0][2], CHUNK_SIZE - 1, i, ex, ey, ez, ew) {
             int x = ex - ox;
             int y = ey + CHUNK_SIZE - oy;
             int z = ez - CHUNK_SIZE - oz;
-            int w = ew;
-            opaque[XYZ(x, y, z)] = !is_transparent[w];
-            if (opaque[XYZ(x, y, z)]) {
-                highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-            }
+            update_blocks_and_highest(x, y, z, ew, blocks, highest);
         } END_CHUNK_FOR_EACH_1D;
-        /* Populate the opaque array with the chunk above-back */
+        /* Populate the blocks array with the chunk above-back */
         CHUNK_FOR_EACH_X(item->neighbour_blocks[1][2][2], 0, i, ex, ey, ez, ew) {
             int x = ex - ox;
             int y = ey + CHUNK_SIZE - oy;
             int z = ez + CHUNK_SIZE - oz;
-            int w = ew;
-            opaque[XYZ(x, y, z)] = !is_transparent[w];
-            if (opaque[XYZ(x, y, z)]) {
-                highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-            }
+            update_blocks_and_highest(x, y, z, ew, blocks, highest);
         } END_CHUNK_FOR_EACH_1D;
 
-        /* Populate the opaque array with the block above-left-front */
+        /* Populate the blocks array with the block above-left-front */
         {
             int ex = CHUNK_SIZE - 1;
             int ey = i;
@@ -931,14 +992,11 @@ void compute_chunk(WorkerItem *item) {
             int x = ex - CHUNK_SIZE - ox;
             int y = ey + CHUNK_SIZE - oy;
             int z = ez - CHUNK_SIZE - oz;
-            int w = item->neighbour_blocks[0][0][2][ex+ey*CHUNK_SIZE+ez*CHUNK_SIZE*CHUNK_SIZE];
-            opaque[XYZ(x, y, z)] = !is_transparent[w];
-            if (opaque[XYZ(x, y, z)]) {
-                highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-            }
+            int ew = item->neighbour_blocks[0][0][2][ex+ey*CHUNK_SIZE+ez*CHUNK_SIZE*CHUNK_SIZE];
+            update_blocks_and_highest(x, y, z, ew, blocks, highest);
         }
 
-        /* Populate the opaque array with the block above-right-front */
+        /* Populate the blocks array with the block above-right-front */
         {
             int ex = 0;
             int ey = i;
@@ -946,14 +1004,11 @@ void compute_chunk(WorkerItem *item) {
             int x = ex + CHUNK_SIZE - ox;
             int y = ey + CHUNK_SIZE - oy;
             int z = ez - CHUNK_SIZE - oz;
-            int w = item->neighbour_blocks[2][0][2][ex+ey*CHUNK_SIZE+ez*CHUNK_SIZE*CHUNK_SIZE];
-            opaque[XYZ(x, y, z)] = !is_transparent[w];
-            if (opaque[XYZ(x, y, z)]) {
-                highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-            }
+            int ew = item->neighbour_blocks[2][0][2][ex+ey*CHUNK_SIZE+ez*CHUNK_SIZE*CHUNK_SIZE];
+            update_blocks_and_highest(x, y, z, ew, blocks, highest);
         }
 
-        /* Populate the opaque array with the block above-left-back */
+        /* Populate the blocks array with the block above-left-back */
         {
             int ex = CHUNK_SIZE - 1;
             int ey = i;
@@ -961,14 +1016,11 @@ void compute_chunk(WorkerItem *item) {
             int x = ex - CHUNK_SIZE - ox;
             int y = ey + CHUNK_SIZE - oy;
             int z = ez + CHUNK_SIZE - oz;
-            int w = item->neighbour_blocks[0][2][2][ex+ey*CHUNK_SIZE+ez*CHUNK_SIZE*CHUNK_SIZE];
-            opaque[XYZ(x, y, z)] = !is_transparent[w];
-            if (opaque[XYZ(x, y, z)]) {
-                highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-            }
+            int ew = item->neighbour_blocks[0][2][2][ex+ey*CHUNK_SIZE+ez*CHUNK_SIZE*CHUNK_SIZE];
+            update_blocks_and_highest(x, y, z, ew, blocks, highest);
         }
 
-        /* Populate the opaque array with the block above-right-back */
+        /* Populate the blocks array with the block above-right-back */
         {
             int ex = 0;
             int ey = i;
@@ -976,86 +1028,68 @@ void compute_chunk(WorkerItem *item) {
             int x = ex + CHUNK_SIZE - ox;
             int y = ey + CHUNK_SIZE - oy;
             int z = ez + CHUNK_SIZE - oz;
-            int w = item->neighbour_blocks[2][2][2][ex+ey*CHUNK_SIZE+ez*CHUNK_SIZE*CHUNK_SIZE];
-            opaque[XYZ(x, y, z)] = !is_transparent[w];
-            if (opaque[XYZ(x, y, z)]) {
-                highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-            }
+            int ew = item->neighbour_blocks[2][2][2][ex+ey*CHUNK_SIZE+ez*CHUNK_SIZE*CHUNK_SIZE];
+            update_blocks_and_highest(x, y, z, ew, blocks, highest);
         }
 
     }
 
     /* Populate the corner cases on the same level */
 
-    /* Populate the opaque array with the chunk left-front */
+    /* Populate the blocks array with the chunk left-front */
     CHUNK_FOR_EACH_Y(item->neighbour_blocks[0][0][1], CHUNK_SIZE - 1, CHUNK_SIZE - 1, ex, ey, ez, ew) {
         int x = ex - CHUNK_SIZE - ox;
         int y = ey - oy;
         int z = ez - CHUNK_SIZE - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-        }
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
     } END_CHUNK_FOR_EACH_1D;
 
-    /* Populate the opaque array with the chunk left-back */
+    /* Populate the blocks array with the chunk left-back */
     CHUNK_FOR_EACH_Y(item->neighbour_blocks[0][2][1], CHUNK_SIZE - 1, 0, ex, ey, ez, ew) {
         int x = ex - CHUNK_SIZE - ox;
         int y = ey - oy;
         int z = ez + CHUNK_SIZE - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-        }
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
     } END_CHUNK_FOR_EACH_1D;
 
-    /* Populate the opaque array with the chunk right-front */
+    /* Populate the blocks array with the chunk right-front */
     CHUNK_FOR_EACH_Y(item->neighbour_blocks[2][0][1], 0, CHUNK_SIZE - 1, ex, ey, ez, ew) {
         int x = ex + CHUNK_SIZE - ox;
         int y = ey - oy;
         int z = ez - CHUNK_SIZE - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-        }
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
     } END_CHUNK_FOR_EACH_1D;
 
-    /* Populate the opaque array with the chunk right-back */
+    /* Populate the blocks array with the chunk right-back */
     CHUNK_FOR_EACH_Y(item->neighbour_blocks[2][2][1], 0, 0, ex, ey, ez, ew) {
         int x = ex + CHUNK_SIZE - ox;
         int y = ey - oy;
         int z = ez + CHUNK_SIZE - oz;
-        int w = ew;
-        opaque[XYZ(x, y, z)] = !is_transparent[w];
-        if (opaque[XYZ(x, y, z)]) {
-            highest[XZ(x, z)] = MAX(highest[XZ(x, z)], y);
-        }
+        update_blocks_and_highest(x, y, z, ew, blocks, highest);
     } END_CHUNK_FOR_EACH_1D;
 
 
     // count exposed faces
     int faces = 0;
-    CHUNK_FOR_EACH(blocks, ex, ey, ez, ew) {
-        if (ew <= 0) {
+    CHUNK_FOR_EACH(chunk_blocks, ex, ey, ez, ew) {
+        if (IS_STATE(block_type[ew], GAS)) {
             continue;
         }
         int x = ex - ox;
         int y = ey - oy;
         int z = ez - oz;
-        int f1 = !opaque[XYZ(x - 1, y, z)];
-        int f2 = !opaque[XYZ(x + 1, y, z)];
-        int f3 = !opaque[XYZ(x, y + 1, z)];
-        int f4 = !opaque[XYZ(x, y - 1, z)];
-        int f5 = !opaque[XYZ(x, y, z - 1)];
-        int f6 = !opaque[XYZ(x, y, z + 1)];
+        int f1 = render_face(ew, blocks[XYZ(x - 1, y, z)]);
+        int f2 = render_face(ew, blocks[XYZ(x + 1, y, z)]);
+        int f3 = render_face(ew, blocks[XYZ(x, y + 1, z)]);
+        int f4 = render_face(ew, blocks[XYZ(x, y - 1, z)]);
+        int f5 = render_face(ew, blocks[XYZ(x, y, z - 1)]);
+        int f6 = render_face(ew, blocks[XYZ(x, y, z + 1)]);
+
         int total = f1 + f2 + f3 + f4 + f5 + f6;
         if (total == 0) {
             continue;
         }
-        if (is_plant[ew]) {
+        if (IS(block_type[ew], PLANT)) {
             total = 4;
         }
         faces += total;
@@ -1064,19 +1098,20 @@ void compute_chunk(WorkerItem *item) {
     // generate geometry
     GLfloat *data = malloc_faces(10, faces);
     int offset = 0;
-    CHUNK_FOR_EACH(blocks, ex, ey, ez, ew) {
-        if (ew <= 0) {
+    CHUNK_FOR_EACH(chunk_blocks, ex, ey, ez, ew) {
+        if (IS_STATE(block_type[ew], GAS)) {
             continue;
         }
         int x = ex - ox;
         int y = ey - oy;
         int z = ez - oz;
-        int f1 = !opaque[XYZ(x - 1, y, z)];
-        int f2 = !opaque[XYZ(x + 1, y, z)];
-        int f3 = !opaque[XYZ(x, y + 1, z)];
-        int f4 = !opaque[XYZ(x, y - 1, z)];
-        int f5 = !opaque[XYZ(x, y, z - 1)];
-        int f6 = !opaque[XYZ(x, y, z + 1)];
+        int f1 = render_face(ew, blocks[XYZ(x - 1, y, z)]);
+        int f2 = render_face(ew, blocks[XYZ(x + 1, y, z)]);
+        int f3 = render_face(ew, blocks[XYZ(x, y + 1, z)]);
+        int f4 = render_face(ew, blocks[XYZ(x, y - 1, z)]);
+        int f5 = render_face(ew, blocks[XYZ(x, y, z - 1)]);
+        int f6 = render_face(ew, blocks[XYZ(x, y, z + 1)]);
+
         int total = f1 + f2 + f3 + f4 + f5 + f6;
         if (total == 0) {
             continue;
@@ -1087,11 +1122,11 @@ void compute_chunk(WorkerItem *item) {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 for (int dz = -1; dz <= 1; dz++) {
-                    neighbors[index] = opaque[XYZ(x + dx, y + dy, z + dz)];
+                    neighbors[index] = !IS(w_t(blocks, x + dx, y + dy, z + dz), TRANSPARENT);
                     shades[index] = 0;
                     if (y + dy <= highest[XZ(x + dx, z + dz)]) {
                         for (int oy = 0; oy < 8; oy++) {
-                            if (opaque[XYZ(x + dx, y + dy + oy, z + dz)]) {
+                            if (!IS(w_t(blocks, x + dx, y + dy + oy, z + dz), TRANSPARENT)) {
                                 shades[index] = 1.0 - oy * 0.125;
                                 break;
                             }
@@ -1104,7 +1139,7 @@ void compute_chunk(WorkerItem *item) {
         float ao[6][4];
         float light[6][4];
         occlusion(neighbors, shades, ao, light);
-        if (is_plant[ew]) {
+        if (IS(block_type[ew], PLANT)) {
             total = 4;
             float min_ao = 1;
             float max_light = 0;
@@ -1127,15 +1162,17 @@ void compute_chunk(WorkerItem *item) {
         offset += total * 60;
     } END_CHUNK_FOR_EACH;
 
-    free(opaque);
+    free(blocks);
     free(highest);
 
     item->faces = faces;
     item->data = data;
+    item->opaque_neighbours = opaque_neighbours;
 }
 
 void generate_chunk(Chunk *chunk, WorkerItem *item) {
     chunk->faces = item->faces;
+    chunk->opaque_neighbours = item->opaque_neighbours;
     del_buffer(chunk->buffer);
     chunk->buffer = gen_faces(10, item->faces, item->data);
 }
@@ -1190,6 +1227,7 @@ void request_chunks() {
     chunk->q = q;
     chunk->k = k;
     chunk->faces = 0;
+    chunk->opaque_neighbours = 0;
     chunk->buffer = 0;
     chunk->dirty = 1;
     memset(chunk->blocks, 0, CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE);
@@ -1371,6 +1409,10 @@ int render_chunks(Attrib *attrib, Player *player) {
     glUniform1f(attrib->timer, time_of_day());
     for (int i = 0; i < g->chunk_count; i++) {
         Chunk *chunk = g->chunks + i;
+        if(chunk->faces == 0) {
+            /* Skip fully transparent chunks */
+            continue;
+        }
         if (chunk_distance(chunk, p, q, k) > g->render_radius) {
             continue;
         }
@@ -1378,7 +1420,9 @@ int render_chunks(Attrib *attrib, Player *player) {
         {
             continue;
         }
-
+        if(chunk_culled(chunk, s->x, s->y, s->z)) {
+            continue;
+        }
         float rx = 0;
         float ry = 0;
         float translation[16];
@@ -1440,7 +1484,7 @@ void render_wireframe(Attrib *attrib, Player *player) {
         s->x, s->y, s->z, s->rx, s->ry, g->fov, g->ortho, g->render_radius);
     int hx, hy, hz;
     int hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
-    if (is_obstacle[hw]) {
+    if (IS(block_type[hw], OBSTACLE)) {
         glUseProgram(attrib->program);
         glLineWidth(2);
         glEnable(GL_COLOR_LOGIC_OP);
@@ -1872,6 +1916,13 @@ void parse_block(Chunk * chunk, int x, int y, int z, int w, State *s) {
 
 }
 
+void set_dirty(int p, int q, int k) {
+    Chunk *c = find_chunk(p, q, k, 0);
+    if (c) {
+        c->dirty = 1;
+    }
+}
+
 void parse_blocks(int p, int q, int k, char* blocks, int size, State *s) {
     g->blocks_recv = g->blocks_recv + CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
     int out_size = inflate_data(blocks + BLOCKS_HEADER_SIZE, size - BLOCKS_HEADER_SIZE,
@@ -1882,19 +1933,13 @@ void parse_blocks(int p, int q, int k, char* blocks, int size, State *s) {
         int r = 1;
         chunk->dirty = 1;
         /* Make all adjacent chunks dirty */
-        for (int dp = -r; dp <= r; dp++) {
-            for (int dq = -r; dq <= r; dq++) {
-                for (int dk = -r; dk <= r; dk++) {
-                    int a = chunk->p + dp;
-                    int b = chunk->q + dq;
-                    int c = chunk->k + dk;
-                    Chunk *adj = find_chunk(a, b, c, 0);
-                    if (adj) {
-                        adj->dirty = 1;
-                    }
-                }
-            }
-        }
+        set_dirty(p + 1, q, k);
+        set_dirty(p - 1, q, k);
+        set_dirty(p, q + 1, k);
+        set_dirty(p, q - 1, k);
+        set_dirty(p, q, k + 1);
+        set_dirty(p, q, k - 1);
+
     }
 }
 
@@ -1995,18 +2040,39 @@ void parse_buffer(Packet packet) {
             {
                 int w, obstacle, transparent, left, right, top, bottom, front, back;
                 char shape[16];
-                if(sscanf(line, "W,%d,%15[^,],%d,%d,%d,%d,%d,%d,%d,%d",
-                          &w, shape, &obstacle, &transparent, &left, &right,
-                          &top, &bottom, &front, &back) == 10) {
-                    is_plant[w] = strncmp(shape, "plant", 16) == 0;
-                    is_obstacle[w] = obstacle;
-                    is_transparent[w] = transparent;
+                char state[16];
+                if(sscanf(line, "W,%d,%15[^,],%d,%d,%15[^,],%d,%d,%d,%d,%d,%d",
+                          &w, shape, &obstacle, &transparent, state,
+                          &left, &right, &top, &bottom, &front, &back) == 11) {
+                    if(strncmp(shape, "plant", 16) == 0) {
+                        block_type[w] = SET(block_type[w], PLANT);
+                    } else {
+                        block_type[w] = UNSET(block_type[w], PLANT);
+                    }
+                    if(obstacle) {
+                        block_type[w] = SET(block_type[w], OBSTACLE);
+                    } else {
+                        block_type[w] = UNSET(block_type[w], OBSTACLE);
+                    }
+                    if(transparent) {
+                        block_type[w] = SET(block_type[w], TRANSPARENT);
+                    } else {
+                        block_type[w] = UNSET(block_type[w], TRANSPARENT);
+                    }
+                    if(strncmp(state, "gas", 16) == 0) {
+                        block_type[w] = SET_STATE(block_type[w], GAS);
+                    } else if(strncmp(state, "fluid", 16) == 0) {
+                        block_type[w] = SET_STATE(block_type[w], FLUID);
+                    } else {
+                        block_type[w] = SET_STATE(block_type[w], SOLID);
+                    }
                     blocks[w][0] = left;
                     blocks[w][1] = right;
                     blocks[w][2] = top;
                     blocks[w][3] = bottom;
                     blocks[w][4] = front;
                     blocks[w][5] = back;
+                    if(DEBUG) printf("W: %d, SOLID: %d, FLUID: %d, GAS: %d, OBSTACLE: %d, TRANSPARENT: %d, PLANT: %d\n\n", w, IS_STATE(block_type[w], SOLID), IS_STATE(block_type[w], FLUID), IS_STATE(block_type[w], GAS), IS(block_type[w], OBSTACLE), IS(block_type[w], TRANSPARENT), IS(block_type[w], PLANT));
                 }
             }
 

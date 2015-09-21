@@ -5,14 +5,22 @@
 
 #define CHUNK_SIZE 32
 
+#define BELOW 0x01
+#define ABOVE 0x02
+#define LEFT 0x04
+#define RIGHT 0x08
+#define FRONT 0x10
+#define BACK 0x20
+
 typedef struct {
-  char blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
-  int p;
-  int q;
-  int k;
-  int faces;
-  int dirty;
-  GLuint buffer;
+    char blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+    int p;
+    int q;
+    int k;
+    int faces;
+    int dirty;
+    char opaque_neighbours;
+    GLuint buffer;
 } Chunk;
 
 char chunk_get(Chunk *chunk, int x, int y, int z);

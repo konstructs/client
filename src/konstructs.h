@@ -31,6 +31,7 @@ typedef struct {
   int k;
   char neighbour_blocks[3][3][3][(CHUNK_SIZE + 2)*(CHUNK_SIZE + 2)*(CHUNK_SIZE + 2)];
   int faces;
+  char opaque_neighbours;
   GLfloat *data;
 } WorkerItem;
 
