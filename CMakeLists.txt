@@ -37,12 +37,6 @@ endif()
 endif()
 include(${CPM_DIR}/CPM.cmake)
 
-# Don't build CAF libraries that are not used
-set(CAF_NO_CASH yes)
-set(CAF_NO_NEXUS yes)
-set(CAF_NO_OPENCL yes)
-set(CAF_NO_RIAC yes)
-
 #------------------------------------------------------------------------------
 # CPM Modules
 #------------------------------------------------------------------------------
