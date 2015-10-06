@@ -18,5 +18,6 @@ elif [[ $TRAVIS_OS_NAME == osx ]]; then
 
   cmake .
   make
+  ls -l
 
 fi
