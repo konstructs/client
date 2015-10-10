@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(konstructs)
 
+cmake_policy(SET CMP0002 OLD)
+
 #-----------------------------------------------------------------------
 # Check for C++11 enabled compiler
 #-----------------------------------------------------------------------
