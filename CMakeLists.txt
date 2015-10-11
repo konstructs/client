@@ -44,8 +44,8 @@ include(${CPM_DIR}/CPM.cmake)
 #------------------------------------------------------------------------------
 
 CPM_AddModule("cpm-glfw"
-	GIT_REPOSITORY "https://github.com/nsg/cpm-glfw.git"
-	GIT_TAG "3.0.4")
+	GIT_REPOSITORY "https://github.com/konstructs/cpm-glfw.git"
+	GIT_TAG "3.0.4-1")
 
 CPM_AddModule("cpm-glew"
 	GIT_REPOSITORY "https://github.com/iauns/cpm-glew.git"
