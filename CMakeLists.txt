@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(konstructs)
 
+cmake_policy(SET CMP0002 OLD)
+
 #-----------------------------------------------------------------------
 # Check for C++11 enabled compiler
 #-----------------------------------------------------------------------
@@ -42,8 +44,8 @@ include(${CPM_DIR}/CPM.cmake)
 #------------------------------------------------------------------------------
 
 CPM_AddModule("cpm-glfw"
-	GIT_REPOSITORY "https://github.com/nsg/cpm-glfw.git"
-	GIT_TAG "3.0.4")
+	GIT_REPOSITORY "https://github.com/konstructs/cpm-glfw.git"
+	GIT_TAG "3.0.4-1")
 
 CPM_AddModule("cpm-glew"
 	GIT_REPOSITORY "https://github.com/iauns/cpm-glew.git"
@@ -52,6 +54,10 @@ CPM_AddModule("cpm-glew"
 CPM_AddModule("cpm-lodepng"
 	GIT_REPOSITORY "https://github.com/nsg/cpm-lodepng.git"
 	GIT_TAG "20150912")
+
+CPM_AddModule("cpm-actor-framework"
+	GIT_REPOSITORY "https://github.com/petterarvidsson/cpm-actor-framework.git"
+	GIT_TAG "0.14.2")
 
 CPM_Finish()
 
@@ -74,4 +80,3 @@ else()
   target_link_libraries(konstructs
     ${CPM_LIBRARIES} ${ZLIB_LIBRARIES})
 endif()
-
