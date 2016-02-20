@@ -70,6 +70,12 @@ public:
         menu_state(0) {
 
         using namespace nanogui;
+
+        printf("OpenGL vendor: %s\n", glGetString(GL_VENDOR));
+        printf("OpenGL version: %s\n", glGetString(GL_VERSION));
+        printf("OpenGL renderer: %s\n", glGetString(GL_RENDERER));
+        printf("OpenGL extensions: %s\n", glGetString(GL_EXTENSIONS));
+
         performLayout(mNVGContext);
         glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         if (nick.size() > 0 && hash.size() > 0 && hostname.size() > 0) {
