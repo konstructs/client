@@ -98,7 +98,7 @@ namespace konstructs {
                 matrix::ext_frustum_planes(planes, radius, m);
                 for(auto it = models.begin(); it != models.end();) {
                     int distance = (it->second->position - player_chunk).norm();
-                    if (distance > radius) {
+                    if (distance > radius + 1) {
                         it = models.erase(it);
                     } else if(distance <= radius){
                         auto pos = it->first;
