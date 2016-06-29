@@ -400,7 +400,7 @@ namespace konstructs {
                     request_chunks = 1;
                 }
                 for(auto it = received.begin(); it != received.end();) {
-                    if((*it - p_chunk).norm() > r) {
+                    if((*it - p_chunk).norm() > r + 1) {
                         it = received.erase(it);
                     } else {
                         ++it;
@@ -421,7 +421,7 @@ namespace konstructs {
                                 if(received.find(pos) == received.end()) {
                                     if(requested.find(pos) == requested.end()) {
                                         /* We don't have it and didn't request it */
-                                        if(distance < best_chunk_distance) {
+                                        if(distance < best_chunk_distance && distance < r) {
                                             best_chunk_distance = distance;
                                             best_chunk = pos;
                                         }
