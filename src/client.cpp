@@ -388,6 +388,7 @@ namespace konstructs {
                     for(auto chunk: updated_queue) {
                         updated.insert(chunk);
                     }
+                    updated_queue.clear();
 
                     for(auto chunk: received_queue) {
                         requested.erase(chunk);
