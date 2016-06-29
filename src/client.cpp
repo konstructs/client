@@ -27,9 +27,9 @@ namespace konstructs {
 
     const int NO_CHUNK_FOUND = 0x0FFFFFFF;
 
-    Client::Client(const int max_radius) :
+    Client::Client() :
         connected(false),
-        player_chunk(0,0,0), radius(0), max_radius(max_radius) {
+        player_chunk(0,0,0), radius(0) {
         recv_thread = new std::thread(&Client::recv_worker, this);
         send_thread = new std::thread(&Client::send_worker, this);
         chunk_thread = new std::thread(&Client::chunk_worker, this);
@@ -400,7 +400,7 @@ namespace konstructs {
                     request_chunks = 1;
                 }
                 for(auto it = received.begin(); it != received.end();) {
-                    if((*it - p_chunk).norm() > max_radius) {
+                    if((*it - p_chunk).norm() > r + 1) {
                         it = received.erase(it);
                     } else {
                         ++it;
@@ -421,7 +421,7 @@ namespace konstructs {
                                 if(received.find(pos) == received.end()) {
                                     if(requested.find(pos) == requested.end()) {
                                         /* We don't have it and didn't request it */
-                                        if(distance < best_chunk_distance) {
+                                        if(distance < best_chunk_distance && distance < r) {
                                             best_chunk_distance = distance;
                                             best_chunk = pos;
                                         }
