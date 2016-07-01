@@ -451,6 +451,7 @@ namespace konstructs {
                     for(auto chunk: updated_queue) {
                         updated.insert(chunk);
                     }
+                    updated_queue.clear();
 
                     // Clear the updated queue
                     updated_queue.clear();
