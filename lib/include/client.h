@@ -87,6 +87,10 @@ namespace konstructs {
         void process_error(Packet *packet);
         void process_chunk(Packet *packet);
         void process_chunk_updated(Packet *packet);
+        void cache_chunk(Vector3i pos, Packet *packet);
+        std::string cached_chunk_path(Vector3i pos);
+        bool is_chunk_cached(Vector3i pos);
+        void load_cached_chunk(Vector3i pos);
         void recv_worker();
         void send_worker();
         bool is_empty_chunk(Vector3i pos);

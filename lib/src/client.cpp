@@ -13,10 +13,13 @@
 #include <string.h>
 #include <errno.h>
 #include <sstream>
+#include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <chrono>
 #include <functional>
 #include "client.h"
+#include "util.h"
 
 #define PROTOCOL_VERSION 8
 #define MAX_RECV_SIZE 4096*1024
@@ -124,10 +127,57 @@ namespace konstructs {
 
         Vector3i position(p, q, k);
         received_chunk(position);
+        cache_chunk(position, packet);
         const int blocks_size = packet->size - 3 * sizeof(int);
         auto chunk = make_shared<ChunkData>(position, pos, blocks_size, (uint8_t*)inflation_buffer);
         std::lock_guard<std::mutex> lock_packets(packets_mutex);
         chunks.push_back(chunk);
+    }
+
+    /* Write a chunk to local disk cache */
+    void Client::cache_chunk(Vector3i pos, Packet *packet) {
+        std::string p_path = "cache/chunk/" + std::to_string(pos[0]);
+        std::string q_path = p_path + "/" + std::to_string(pos[1]);
+        std::string k_path = q_path + "/" + std::to_string(pos[2]);
+
+        if (!file_exist("cache")) make_dir("cache");
+        if (!file_exist("cache/chunk")) make_dir("cache/chunk");
+        if (!file_exist(p_path.c_str())) make_dir(p_path.c_str());
+        if (!file_exist(q_path.c_str())) make_dir(q_path.c_str());
+
+        ofstream cf(k_path, ofstream::binary);
+        cf.write(packet->buffer(),packet->size);
+        cf.close();
+    }
+
+    std::string Client::cached_chunk_path(Vector3i pos) {
+        stringstream cache_path;
+        cache_path << "cache/chunk/" << pos[0] << "/" << pos[1] << "/" << pos[2];
+
+        return cache_path.str();
+    }
+
+    bool Client::is_chunk_cached(Vector3i pos) {
+        return file_exist(cached_chunk_path(pos).c_str());
+    }
+
+    void Client::load_cached_chunk(Vector3i pos) {
+        string path(cached_chunk_path(pos));
+
+        // Get size of file
+        ifstream cf(path, ofstream::binary);
+        cf.seekg(0,cf.end);
+        long size = cf.tellg();
+        cf.seekg(0);
+
+        // make a package
+        auto packet = make_shared<Packet>('C', size);
+
+        // load the files content
+        cf.read(packet->buffer(), size);
+        cf.close();
+
+        process_chunk(packet.get());
     }
 
     void Client::recv_worker() {
@@ -508,12 +558,15 @@ namespace konstructs {
                         for(int q = -r - 1; q < r; q++) {
                             for(int k = -r - 1; k < r; k++) {
                                 Vector3i pos = p_chunk + Vector3i(p, q, k);
+                                int distance = (pos - p_chunk).norm();
 
-                                if(is_empty_chunk(pos)) {
-                                    int distance = (pos - p_chunk).norm();
-                                    // This checks removes edges so that we request a sphere not a cube
-                                    if(distance <= r) {
-                                        // Add chunk to queue
+                                // This checks removes edges so that we request a sphere not a cube
+                                if(distance <= r) {
+                                    if(is_empty_chunk(pos) && is_chunk_cached(pos)) {
+                                        // Missing chunk, and we have the chunk cached on disk.
+                                        load_cached_chunk(pos);
+                                    } else if(is_empty_chunk(pos)) {
+                                        // Request missing chunks with no local cache.
                                         chunks_to_fetch.push({distance, pos});
                                     }
                                 }
@@ -532,14 +585,17 @@ namespace konstructs {
                         for(int q = -r - 1; q < r; q++) {
                             for(int k = -r - 1; k < r; k++) {
                                 Vector3i pos = p_chunk + Vector3i(p, q, k);
+                                int distance = (pos - p_chunk).norm();
 
-                                if(is_empty_chunk(pos)) {
-                                    int distance = (pos - p_chunk).norm();
-
-                                    // This checks removes edges so that we request a sphere not a cube
-                                    // It also rejects chunks that was already previously added to the queue
-                                    // that is chunks within the old radius
-                                    if(distance <= r && distance >= old_r) {
+                                // This checks removes edges so that we request a sphere not a cube
+                                // It also rejects chunks that was already previously added to the queue
+                                // that is chunks within the old radius
+                                if(distance <= r && distance >= old_r) {
+                                    if(is_empty_chunk(pos) && is_chunk_cached(pos)) {
+                                        // Missing chunk, and we have the chunk cached on disk.
+                                        load_cached_chunk(pos);
+                                    } else if(is_empty_chunk(pos)) {
+                                        // Request missing chunks with no local cache.
                                         chunks_to_fetch.push({distance, pos});
                                     }
                                 }

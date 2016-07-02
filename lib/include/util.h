@@ -30,5 +30,6 @@ GLuint gen_faces(int components, int faces, GLfloat *data);
 void load_png_texture(const char *file_name);
 void load_png_texture_from_buffer(const char *in, int size);
 int file_exist(const char *filename);
+bool make_dir(const char *filename);
 
 #endif
