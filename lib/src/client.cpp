@@ -567,6 +567,7 @@ namespace konstructs {
                                     if(is_empty_chunk(pos) && is_chunk_cached(pos)) {
                                         // Missing chunk, and we have the chunk cached on disk.
                                         load_cached_chunk(pos, inflation_buffer);
+                                        set_loaded_radius(distance);
                                     } else if(is_empty_chunk(pos)) {
                                         // Request missing chunks with no local cache.
                                         chunks_to_fetch.push({distance, pos});
@@ -596,6 +597,7 @@ namespace konstructs {
                                     if(is_empty_chunk(pos) && is_chunk_cached(pos)) {
                                         // Missing chunk, and we have the chunk cached on disk.
                                         load_cached_chunk(pos, inflation_buffer);
+                                        set_loaded_radius(distance);
                                     } else if(is_empty_chunk(pos)) {
                                         // Request missing chunks with no local cache.
                                         chunks_to_fetch.push({distance, pos});
