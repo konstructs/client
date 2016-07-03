@@ -212,9 +212,9 @@ namespace konstructs {
                     // read 'size' bytes from the network
                     int r = recv_all(packet->buffer(), packet->size);
                     // move data over to packet_buffer
-                    if(packet->type == 'C') {
+                    if(packet->type == 'C')
                         process_chunk(packet.get(), inflation_buffer);
-                    } else if(packet->type == 'E')
+                    else if(packet->type == 'E')
                         process_error(packet.get());
                     else if(packet->type == 'c')
                         process_chunk_updated(packet.get());
@@ -567,7 +567,6 @@ namespace konstructs {
                                     if(is_empty_chunk(pos) && is_chunk_cached(pos)) {
                                         // Missing chunk, and we have the chunk cached on disk.
                                         load_cached_chunk(pos, inflation_buffer);
-                                        set_loaded_radius(distance);
                                     } else if(is_empty_chunk(pos)) {
                                         // Request missing chunks with no local cache.
                                         chunks_to_fetch.push({distance, pos});
@@ -597,7 +596,6 @@ namespace konstructs {
                                     if(is_empty_chunk(pos) && is_chunk_cached(pos)) {
                                         // Missing chunk, and we have the chunk cached on disk.
                                         load_cached_chunk(pos, inflation_buffer);
-                                        set_loaded_radius(distance);
                                     } else if(is_empty_chunk(pos)) {
                                         // Request missing chunks with no local cache.
                                         chunks_to_fetch.push({distance, pos});
