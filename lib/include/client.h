@@ -85,12 +85,12 @@ namespace konstructs {
         void send_string(const string &str);
         size_t recv_all(char* out_buf, const size_t size);
         void process_error(Packet *packet);
-        void process_chunk(Packet *packet);
+        void process_chunk(Packet *packet, char *inflation_buffer);
         void process_chunk_updated(Packet *packet);
         void cache_chunk(Vector3i pos, Packet *packet);
         std::string cached_chunk_path(Vector3i pos);
         bool is_chunk_cached(Vector3i pos);
-        void load_cached_chunk(Vector3i pos);
+        void load_cached_chunk(Vector3i pos, char* inflation_buffer);
         void recv_worker();
         void send_worker();
         bool is_empty_chunk(Vector3i pos);
@@ -117,7 +117,6 @@ namespace konstructs {
         bool connected;
         bool logged_in;
         std::string error_message;
-        char *inflation_buffer;
         /* Chunk worker */
         Vector3i player_chunk;
         int radius;

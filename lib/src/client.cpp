@@ -37,7 +37,6 @@ namespace konstructs {
         recv_thread = new std::thread(&Client::recv_worker, this);
         send_thread = new std::thread(&Client::send_worker, this);
         chunk_thread = new std::thread(&Client::chunk_worker, this);
-        inflation_buffer = new char[BLOCK_BUFFER_SIZE];
     }
 
     string Client::get_error_message() {
@@ -112,7 +111,7 @@ namespace konstructs {
         force_close();
     }
 
-    void Client::process_chunk(Packet *packet) {
+    void Client::process_chunk(Packet *packet, char *inflation_buffer) {
         int p, q, k;
         char *pos = packet->buffer();
 
@@ -161,7 +160,7 @@ namespace konstructs {
         return file_exist(cached_chunk_path(pos).c_str());
     }
 
-    void Client::load_cached_chunk(Vector3i pos) {
+    void Client::load_cached_chunk(Vector3i pos, char* inflation_buffer) {
         string path(cached_chunk_path(pos));
 
         // Get size of file
@@ -177,11 +176,12 @@ namespace konstructs {
         cf.read(packet->buffer(), size);
         cf.close();
 
-        process_chunk(packet.get());
+        process_chunk(packet.get(), inflation_buffer);
     }
 
     void Client::recv_worker() {
         std::cout<<"[Recv worker]: started"<<std::endl;
+        char *inflation_buffer = new char[BLOCK_BUFFER_SIZE];
         while(1) {
             try {
                 std::cout<<"[Recv worker]: waiting for connection"<<std::endl;
@@ -212,9 +212,9 @@ namespace konstructs {
                     // read 'size' bytes from the network
                     int r = recv_all(packet->buffer(), packet->size);
                     // move data over to packet_buffer
-                    if(packet->type == 'C')
-                        process_chunk(packet.get());
-                    else if(packet->type == 'E')
+                    if(packet->type == 'C') {
+                        process_chunk(packet.get(), inflation_buffer);
+                    } else if(packet->type == 'E')
                         process_error(packet.get());
                     else if(packet->type == 'c')
                         process_chunk_updated(packet.get());
@@ -224,6 +224,7 @@ namespace konstructs {
                     }
                 }
             } catch(const std::exception& ex) {
+                delete[] inflation_buffer;
                 std::cout << "[Recv worker]: Caught exception: " << ex.what() << std::endl;
                 std::cout << "[Recv worker]: Will assume connection is down: " << ex.what() << std::endl;
                 error_message = "Disconnected from server.";
@@ -489,6 +490,7 @@ namespace konstructs {
             bool chunk_changed = false; // Stores if the chunk the player is in changed
             // Stores the chunks that needs to be fetched in priority order
             priority_queue<ChunkToFetch, vector<ChunkToFetch>, LessThanByScore> chunks_to_fetch;
+            char *inflation_buffer = new char[BLOCK_BUFFER_SIZE];
 
             while(connected && logged_in) {
 
@@ -564,7 +566,8 @@ namespace konstructs {
                                 if(distance <= r) {
                                     if(is_empty_chunk(pos) && is_chunk_cached(pos)) {
                                         // Missing chunk, and we have the chunk cached on disk.
-                                        load_cached_chunk(pos);
+                                        load_cached_chunk(pos, inflation_buffer);
+                                        set_loaded_radius(distance);
                                     } else if(is_empty_chunk(pos)) {
                                         // Request missing chunks with no local cache.
                                         chunks_to_fetch.push({distance, pos});
@@ -593,7 +596,8 @@ namespace konstructs {
                                 if(distance <= r && distance >= old_r) {
                                     if(is_empty_chunk(pos) && is_chunk_cached(pos)) {
                                         // Missing chunk, and we have the chunk cached on disk.
-                                        load_cached_chunk(pos);
+                                        load_cached_chunk(pos, inflation_buffer);
+                                        set_loaded_radius(distance);
                                     } else if(is_empty_chunk(pos)) {
                                         // Request missing chunks with no local cache.
                                         chunks_to_fetch.push({distance, pos});
@@ -663,6 +667,8 @@ namespace konstructs {
                 }
                 std::this_thread::sleep_for(std::chrono::milliseconds(15));
             }
+
+            delete[] inflation_buffer;
         }
     }
 };
