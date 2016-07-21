@@ -1,6 +1,7 @@
 
 #include <nanogui/nanogui.h>
 #if defined(WIN32)
+#define _WINSOCKAPI_ 
 #include <windows.h>
 #include <winsock2.h>
 #else
@@ -398,6 +399,7 @@ private:
     }
 
     void handle_packet(konstructs::Packet *packet) {
+
         switch(packet->type) {
         case 'P':
             handle_other_player_packet(packet->to_string());
@@ -509,8 +511,13 @@ private:
     void handle_belt(const string &str) {
         uint32_t column, size, type, health;
         if(sscanf(str.c_str(), ",%u,%u,%u,%u",
-                  &column, &size, &type, &health) != 4)
-            throw std::runtime_error(str);
+            &column, &size, &type, &health)!=4)
+        {
+            std::string what="handle_belt expected ,%u,%u,%u,%u got "+str;
+
+            cout<<what;
+//            throw std::runtime_error(what);
+        }
 
         if(size < 1) {
             hud.reset_belt(column);

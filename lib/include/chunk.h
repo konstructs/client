@@ -12,7 +12,8 @@
 #define BLOCK_BUFFER_SIZE (CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE*BLOCK_SIZE)
 #define BLOCKS_HEADER_SIZE 2
 
-namespace konstructs {
+namespace konstructs 
+{
     using namespace Eigen;
     using nonstd::optional;
     using std::pair;
@@ -25,7 +26,8 @@ namespace konstructs {
 
     Vector3i chunked_vec(const Vector3f position);
 
-    class ChunkData {
+    class ChunkData 
+    {
     public:
         ChunkData(const Vector3i _position, char *compressed, const int size, uint8_t *buffer);
         ChunkData(const Vector3i position, BlockData *blocks);
@@ -40,6 +42,8 @@ namespace konstructs {
         const Vector3i position;
         BlockData *blocks;
     };
+
+    typedef std::shared_ptr<ChunkData> SharedChunkData;
 };
 
 #define CHUNK_FOR_EACH(blocks, ex, ey, ez, eb) \

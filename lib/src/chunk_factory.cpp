@@ -164,6 +164,10 @@ namespace konstructs {
             model_data.erase(itr);
             ulock.unlock();
             auto result = compute_chunk(data, block_data);
+
+            if(!result)
+                continue;
+
             if(result->size > 0) {
                 std::lock_guard<std::mutex> ulock(mutex);
                 models.push_back(result);
@@ -224,28 +228,50 @@ namespace konstructs {
         return is_transparent[neighbour] || (self != neighbour && state[neighbour] == STATE_LIQUID);
     }
 
+    BlockData *getBlockData(shared_ptr<ChunkData> chunkData)
+    {
+        if(chunkData)
+            return chunkData->blocks;
+        return nullptr;
+    }
+
     shared_ptr<ChunkModelResult> compute_chunk(const ChunkModelData &data,
                                                const BlockTypeInfo &block_data) {
-        BlockData *blocks = (BlockData *)calloc(XZ_SIZE * XZ_SIZE * XZ_SIZE, sizeof(BlockData));
-        char *highest = (char *)calloc(XZ_SIZE * XZ_SIZE, sizeof(char));
-        BlockData *above = data.above->blocks;
-        BlockData *below = data.below->blocks;
-        BlockData *left = data.left->blocks;
-        BlockData *right = data.right->blocks;
-        BlockData *front = data.front->blocks;
-        BlockData *back = data.back->blocks;
-        BlockData *above_left = data.above_left->blocks;
-        BlockData *above_right = data.above_right->blocks;
-        BlockData *above_front = data.above_front->blocks;
-        BlockData *above_back = data.above_back->blocks;
-        BlockData *above_left_front = data.above_left_front->blocks;
-        BlockData *above_right_front = data.above_right_front->blocks;
-        BlockData *above_left_back = data.above_left_back->blocks;
-        BlockData *above_right_back = data.above_right_back->blocks;
-        BlockData *left_front = data.left_front->blocks;
-        BlockData *right_front = data.right_front->blocks;
-        BlockData *left_back = data.left_back->blocks;
-        BlockData *right_back = data.right_back->blocks;
+ //       BlockData *blocks = (BlockData *)calloc(XZ_SIZE * XZ_SIZE * XZ_SIZE, sizeof(BlockData));
+ //       char *highest = (char *)calloc(XZ_SIZE * XZ_SIZE, sizeof(char));
+        std::vector<BlockData> blocks(XZ_SIZE * XZ_SIZE * XZ_SIZE);
+        std::vector<char> highest(XZ_SIZE * XZ_SIZE);
+
+        BlockData *above = getBlockData(data.above);
+        BlockData *below = getBlockData(data.below);
+        BlockData *left = getBlockData(data.left);
+        BlockData *right = getBlockData(data.right);
+        BlockData *front = getBlockData(data.front);
+        BlockData *back = getBlockData(data.back);
+        BlockData *above_left =getBlockData(data.above_left);
+        BlockData *above_right =getBlockData(data.above_right);
+        BlockData *above_front =getBlockData(data.above_front);
+        BlockData *above_back =getBlockData(data.above_back);
+        BlockData *above_left_front =getBlockData(data.above_left_front);
+        BlockData *above_right_front =getBlockData(data.above_right_front);
+        BlockData *above_left_back =getBlockData(data.above_left_back);
+        BlockData *above_right_back =getBlockData(data.above_right_back);
+        BlockData *left_front =getBlockData(data.left_front);
+        BlockData *right_front =getBlockData(data.right_front);
+        BlockData *left_back =getBlockData(data.left_back);
+        BlockData *right_back =getBlockData(data.right_back);
+
+        if((above==nullptr)||(below==nullptr)||(left==nullptr)||(right==nullptr))
+            return shared_ptr<ChunkModelResult>();
+        if((front==nullptr)||(back==nullptr))
+            return shared_ptr<ChunkModelResult>();
+        if((above_left==nullptr)||(above_right==nullptr)||(above_front==nullptr)||(above_back==nullptr))
+            return shared_ptr<ChunkModelResult>();
+        if((above_left_front==nullptr)||(above_right_front==nullptr)||(above_left_back==nullptr)||(above_right_back==nullptr))
+            return shared_ptr<ChunkModelResult>();
+        if((left_front==nullptr)||(right_front==nullptr)||(left_back==nullptr)||(right_back==nullptr))
+            return shared_ptr<ChunkModelResult>();
+
 
         const char *is_transparent = block_data.is_transparent;
         const char *is_plant = block_data.is_plant;
@@ -592,8 +618,8 @@ namespace konstructs {
             offset += total * 12;
         } END_CHUNK_FOR_EACH;
 
-        free(blocks);
-        free(highest);
+//        free(blocks);
+//        free(highest);
         return result;
     }
 };
