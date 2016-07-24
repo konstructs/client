@@ -23,25 +23,45 @@ namespace konstructs {
         chunks.insert({pos, data});
     }
 
-    const BlockData World::get_block(const Vector3i &block_pos) const {
-        return chunks.at(chunked_vec_int(block_pos))->get(block_pos);
+    const BlockData World::get_block(const Vector3i &block_pos) const
+    {
+        auto iter=chunks.find(chunked_vec_int(block_pos));
+
+        if(iter!=chunks.end())
+            return iter->second->get(block_pos);
+        return{0, 0};
+
     }
 
     const std::shared_ptr<ChunkData> World::chunk_at(const Vector3i &block_pos) const {
-        return chunks.at(chunked_vec_int(block_pos));
+        return chunk(chunked_vec_int(block_pos));
     }
 
-    const std::shared_ptr<ChunkData> World::chunk(const Vector3i &chunk_pos) const {
-        return chunks.at(chunk_pos);
+    const std::shared_ptr<ChunkData> World::chunk(const Vector3i &chunk_pos) const
+    {
+        auto iter=chunks.find(chunk_pos);
+
+        if(iter != chunks.end())
+            return iter->second;
+        return std::shared_ptr<ChunkData>();
     }
 
-    const std::vector<std::shared_ptr<ChunkData>> World::atAndAround(const Vector3i &pos) const {
+    const std::vector<std::shared_ptr<ChunkData>> World::atAndAround(const Vector3i &pos) const 
+    {
         std::vector<std::shared_ptr<ChunkData>> result;
-        for(int i = -1; i <= 1; i++) {
-            for(int j = -1; j <= 1; j++) {
-                for(int k = -1; k <= 1; k++) {
-                    try {
-                        result.push_back(chunks.at(pos + Vector3i(i, j, k)));
+        for(int i = -1; i <= 1; i++) 
+        {
+            for(int j = -1; j <= 1; j++) 
+            {
+                for(int k = -1; k <= 1; k++) 
+                {
+                    try 
+                    {
+                        auto iter=chunks.find(pos+Vector3i(i, j, k));
+
+                        if(iter != chunks.end())
+                            result.push_back(iter->second);
+
                     } catch(std::out_of_range e) {
                         // Not in this chunk
                     }
