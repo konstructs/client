@@ -9,9 +9,6 @@
 namespace konstructs {
     using nonstd::nullopt;
 
-    std::shared_ptr<ChunkData> SOLID_CHUNK(std::make_shared<ChunkData>(SOLID_TYPE));
-    std::shared_ptr<ChunkData> VACUUM_CHUNK(std::make_shared<ChunkData>(VACUUM_TYPE));
-
     int chunked_int(int p) {
         if(p < 0) {
             return (p - CHUNK_SIZE + 1) / CHUNK_SIZE;
@@ -43,10 +40,10 @@ namespace konstructs {
             blocks[i].health = buffer[i * BLOCK_SIZE + 2] + ((buffer[i * BLOCK_SIZE + 3] & 0x07) << 8);
         }
     }
-    ChunkData::ChunkData(const uint16_t type) {
+    ChunkData::ChunkData() {
         blocks = new BlockData[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
         for(int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++) {
-            blocks[i].type = type;
+            blocks[i].type = SOLID_TYPE;
             blocks[i].health = MAX_HEALTH;
         }
     }
