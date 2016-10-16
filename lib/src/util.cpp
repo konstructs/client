@@ -96,3 +96,8 @@ int file_exist(const char *filename) {
   int result = stat(filename, &st);
   return result == 0;
 }
+
+// TODO: Will will not work under windows, I think ...
+bool make_dir(const char *filename) {
+    return (mkdir(filename, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != -1);
+}
