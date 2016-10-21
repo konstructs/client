@@ -21,6 +21,7 @@ void make_cube(
 void make_cube2(
     GLuint *data, char ao[6][4],
     int left, int right, int top, int bottom, int front, int back,
+    uint8_t left_al, uint8_t right_al, uint8_t top_al, uint8_t bottom_al, uint8_t front_al, uint8_t back_al,
     int x, int y, int z, const BlockData block, int damage, const int blocks[256][6]);
 
 void make_rotated_cube(float *data, char ao[6][4],

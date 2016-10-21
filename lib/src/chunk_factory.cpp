@@ -553,11 +553,17 @@ namespace konstructs {
             int y = ey - oy;
             int z = ez - oz;
             int f1 = face_visible(eb.type, blocks[XYZ(x - 1, y, z)].type, is_transparent, state);
+            uint8_t f1_al = blocks[XYZ(x - 1, y, z)].ambient;
             int f2 = face_visible(eb.type, blocks[XYZ(x + 1, y, z)].type, is_transparent, state);
+            uint8_t f2_al = blocks[XYZ(x + 1, y, z)].ambient;
             int f3 = face_visible(eb.type, blocks[XYZ(x, y + 1, z)].type, is_transparent, state);
+            uint8_t f3_al = blocks[XYZ(x, y + 1, z)].ambient;
             int f4 = face_visible(eb.type, blocks[XYZ(x, y - 1, z)].type, is_transparent, state);
+            uint8_t f4_al = blocks[XYZ(x, y - 1, z)].ambient;
             int f5 = face_visible(eb.type, blocks[XYZ(x, y, z - 1)].type, is_transparent, state);
+            uint8_t f5_al = blocks[XYZ(x, y, z - 1)].ambient;
             int f6 = face_visible(eb.type, blocks[XYZ(x, y, z + 1)].type, is_transparent, state);
+            uint8_t f6_al = blocks[XYZ(x, y, z + 1)].ambient;
             int total = f1 + f2 + f3 + f4 + f5 + f6;
             if (total == 0) {
                 continue;
@@ -599,6 +605,7 @@ namespace konstructs {
                 int damage = (int)(8.0f - ((float)eb.health / (float)(MAX_HEALTH + 1)) * 8.0f);
                 make_cube2(vertices + offset, ao,
                            f1, f2, f3, f4, f5, f6,
+                           f1_al, f2_al, f3_al, f4_al, f5_al, f6_al,
                            ex, ey, ez, eb, damage, block_data.blocks);
             }
             offset += total * 12;

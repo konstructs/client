@@ -154,6 +154,7 @@ void make_cube(
 
 void make_cube2(GLuint *data, char ao[6][4],
                 int left, int right, int top, int bottom, int front, int back,
+                uint8_t left_al, uint8_t right_al, uint8_t top_al, uint8_t bottom_al, uint8_t front_al, uint8_t back_al,
                 int x, int y, int z, const BlockData block, int damage, const int blocks[256][6]) {
     /*
      * For each corner of the cube, which vertex should be used (see vertex shader)
@@ -443,6 +444,7 @@ void make_cube2(GLuint *data, char ao[6][4],
     };
     GLuint *d = data;
     int faces[6] = {left, right, top, bottom, front, back};
+    uint8_t face_al[6] = {left_al, right_al, top_al, bottom_al, front_al, back_al};
     int dir = block.direction;
     int rot = block.rotation;
     for (int i = 0; i < 6; i++) {
@@ -461,7 +463,7 @@ void make_cube2(GLuint *data, char ao[6][4],
             *(d++) = d1;
             int du = (blocks[block.type][tex[dir][rot][i]] % 16) + (uvs[dir][rot][i][j][0] ? 1 : 0);
             int dv = (blocks[block.type][tex[dir][rot][i]] / 16) + (uvs[dir][rot][i][j][1] ? 1 : 0);
-            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (block.ambient << OFF_AL);
+            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (face_al[i] << OFF_AL);
             *(d++) = d2;
         }
     }
