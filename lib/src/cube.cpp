@@ -150,6 +150,7 @@ void make_cube(
 
 #define OFF_DU 0
 #define OFF_DV 5
+#define OFF_AL 10
 
 void make_cube2(GLuint *data, char ao[6][4],
                 int left, int right, int top, int bottom, int front, int back,
@@ -460,7 +461,7 @@ void make_cube2(GLuint *data, char ao[6][4],
             *(d++) = d1;
             int du = (blocks[block.type][tex[dir][rot][i]] % 16) + (uvs[dir][rot][i][j][0] ? 1 : 0);
             int dv = (blocks[block.type][tex[dir][rot][i]] / 16) + (uvs[dir][rot][i][j][1] ? 1 : 0);
-            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV);
+            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (block.ambient << OFF_AL);
             *(d++) = d2;
         }
     }
