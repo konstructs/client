@@ -1,2 +1,39 @@
-export LIBGL_DRIVERS_PATH=$SNAP/usr/lib/x86_64-linux-gnu/dri
+#!/bin/bash
+
+echo "Welcome to Konstructs Client"
+echo "----------------------------"
+echo
+echo "Snap (snapcraft) is still a new package format and there are still"
+echo "problems with OpenGL applications, like Konstructs."
+echo
+echo "The system will output some debug information to help us to track"
+echo "down possible problems, please report crashes to:"
+echo "https://github.com/konstructs/client/issues"
+echo "Check for simular existing issues before you create a new one."
+echo
+echo "Some of your enviroment:"
+echo $LD_LIBRARY_PATH
+echo $LIBGL_DRIVERS_PATH
+echo $SNAP_LIBRARY_PATH
+echo $SNAP_REVISION
+echo $SNAP_ARCH
+echo $DISPLAY
+echo
+echo "A little about your system:"
+echo $DESKTOP_SESSION
+uname -a
+echo
+echo "List with libGL.so are available:"
+ldconfig -p | grep libGL.so
+ls $SNAP_LIBRARY_PATH
+echo
+echo
+echo "I will start the client now!"
+echo "-------------------------------------------------------"
+
+export LIBGL_DEBUG=verbose
+export LD_LIBRARY_PATH=$SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH
 $SNAP/konstructs
+
+echo "-------------------------------------------------------"
+echo "Did the client crash? If yes please report the problem."
