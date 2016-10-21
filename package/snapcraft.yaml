@@ -3,7 +3,7 @@ version: 0
 summary: A voxel based game client
 description: An open source Infiniminer/Minecraft inspired multiplayer game.
 confinement: strict
-grade: devel
+grade: stable
 
 apps:
   konstructs-client:
