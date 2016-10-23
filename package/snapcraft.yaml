@@ -24,14 +24,14 @@ parts:
     after: [desktop-gtk3]
   client:
     plugin: cmake
-    source: ..
+    source: https://github.com/konstructs/client.git
     configflags: [-DCMAKE_INSTALL_PREFIX=/]
     build-packages:
-      - gcc-4.8
-      - g++-4.8
+      - build-essential
       - xorg-dev
       - cmake
       - libx11-dev
       - zlib1g-dev
+      - libgl1-mesa-dev
     stage-packages:
       - libgl1-mesa-dri

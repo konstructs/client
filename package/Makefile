@@ -10,7 +10,7 @@ tar: konstructs-client.tar.bz2
 snap:
 	sed -i "s/version: 0/version: $(shell git describe --abbrev=0 --tags | tr -d v)/" snapcraft.yaml
 	snapcraft clean
-	snapcraft snap
+	snapcraft cleanbuild
 	sed -i "s/version: $(shell git describe --abbrev=0 --tags | tr -d v)/version: 0/" snapcraft.yaml
 
 build/konstructs:
