@@ -151,10 +151,12 @@ void make_cube(
 #define OFF_DU 0
 #define OFF_DV 5
 #define OFF_AL 10
+#define OFF_R 14
+#define OFF_G 18
+#define OFF_B 22
+#define OFF_LIGHT 26
 
-void make_cube2(GLuint *data, char ao[6][4],
-                int left, int right, int top, int bottom, int front, int back,
-                uint8_t left_al, uint8_t right_al, uint8_t top_al, uint8_t bottom_al, uint8_t front_al, uint8_t back_al,
+void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], BlockData face_data[6],
                 int x, int y, int z, const BlockData block, int damage, const int blocks[256][6]) {
     /*
      * For each corner of the cube, which vertex should be used (see vertex shader)
@@ -443,14 +445,13 @@ void make_cube2(GLuint *data, char ao[6][4],
         {0, 2, 1, 2, 3, 1}
     };
     GLuint *d = data;
-    int faces[6] = {left, right, top, bottom, front, back};
-    uint8_t face_al[6] = {left_al, right_al, top_al, bottom_al, front_al, back_al};
     int dir = block.direction;
     int rot = block.rotation;
     for (int i = 0; i < 6; i++) {
         if (faces[i] == 0) {
             continue;
         }
+        BlockData face = face_data[i];
         int flip = ao[i][0] + ao[i][3] > ao[i][1] + ao[i][2];
         for (int v = 0; v < 6; v++) {
             int j = flip ? flipped[i][v] : indices[i][v];
@@ -463,7 +464,10 @@ void make_cube2(GLuint *data, char ao[6][4],
             *(d++) = d1;
             int du = (blocks[block.type][tex[dir][rot][i]] % 16) + (uvs[dir][rot][i][j][0] ? 1 : 0);
             int dv = (blocks[block.type][tex[dir][rot][i]] / 16) + (uvs[dir][rot][i][j][1] ? 1 : 0);
-            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (face_al[i] << OFF_AL);
+
+            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (face.ambient << OFF_AL) +
+                (face.r << OFF_R) + (face.g << OFF_G) +
+                (face.b << OFF_B) + (face.light << OFF_LIGHT);
             *(d++) = d2;
         }
     }
@@ -503,7 +507,7 @@ void make_plant(
             *(d++) = d1;
             int du = (blocks[block.type][i] % 16) + (uvs[i][j][0] ? 1 : 0);
             int dv = (blocks[block.type][i] / 16) + (uvs[i][j][1] ? 1 : 0);
-            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV);
+            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (block.ambient << OFF_AL);
             *(d++) = d2;
         }
     }

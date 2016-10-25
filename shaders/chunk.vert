@@ -89,6 +89,21 @@ const uint MASK_UV = uint(0x1F);
 const uint OFF_AL = uint(10);
 const uint MASK_AL = uint(0x0F);
 
+/* Third comes the light color and light level encoded with 4 bits
+ * per RGB channel and 4 bits of strength
+ */
+const uint OFF_R = uint(14);
+const uint MASK_R = uint(0x0F);
+
+const uint OFF_G = uint(18);
+const uint MASK_G = uint(0x0F);
+
+const uint OFF_B = uint(22);
+const uint MASK_B = uint(0x0F);
+
+const uint OFF_LIGHT = uint(26);
+const uint MASK_LIGHT = uint(0x0F);
+
 /* UV stepping */
 const float S = (1.0 / 16.0);
 const float DS = (1.0 / 8.0);
@@ -120,8 +135,11 @@ out vec2 damage_uv;
 /* Damage */
 flat out float damage_factor;
 
-/* The real ambient value */
+/* The ambient value */
 out float fragment_ambient;
+
+/* The light value */
+out vec3 light;
 
 out float fog_factor;
 out float fog_height;
@@ -165,6 +183,12 @@ void main() {
     /* Extract the ambient light */
     uint al = (d2 >> OFF_AL) & MASK_AL;
 
+    /* Extract light */
+    uint r = (d2 >> OFF_R) & MASK_R;
+    uint g = (d2 >> OFF_G) & MASK_G;
+    uint b = (d2 >> OFF_B) & MASK_B;
+    uint light_level = (d2 >> OFF_LIGHT) & MASK_LIGHT;
+
     /* All values extracted, shader code starts here */
 
     /* Create a translation matrix from the block position */
@@ -182,6 +206,14 @@ void main() {
 
     /* Apply projection */
     gl_Position = matrix * global_position;
+
+    /* Calculate light */
+    float rf = float(r) * 0.0625;
+    float gf = float(g) * 0.0625;
+    float bf = float(b) * 0.0625;
+    float lf = float(light_level) * 0.0625;
+
+    light = vec3(lf * rf, lf * gf, lf * bf);
 
     /* Calculate the ambient light */
     float ambient = float(al + uint(1)) * 0.0625;
