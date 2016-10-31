@@ -136,7 +136,10 @@ out vec2 damage_uv;
 flat out float damage_factor;
 
 /* The ambient value */
-out float fragment_ambient;
+out float ambient;
+out float fragment_ao;
+
+
 
 /* The light value */
 out vec3 light;
@@ -216,10 +219,10 @@ void main() {
     light = vec3(lf * rf, lf * gf, lf * bf);
 
     /* Calculate the ambient light */
-    float ambient = float(al + uint(1)) * 0.0625;
+    ambient = float(al + uint(1)) * 0.0625;
 
     /* Calculate ambient occlusion */
-    fragment_ambient = (1.0 - float(ao) * 0.03125 * 0.7) * ambient;
+    fragment_ao = (1.0 - float(ao) * 0.03125 * 0.7);
 
     /* Calculate UV coordinates */
     fragment_uv = vec2(du * S, dv * S);
@@ -227,7 +230,7 @@ void main() {
 
     damage_factor = (damage_u * DS) * damage_weight;
 
-    diffuse = min(1.0, max(0.0, dot(normals[normal], light_direction)));
+    diffuse = clamp(dot(normals[normal], light_direction), 0.0, 1.0);
 
     float camera_distance = distance(camera, vec3(global_position));
     fog_factor = pow(clamp(camera_distance / fog_distance, 0.0, 1.0), 4.0);
