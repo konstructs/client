@@ -219,7 +219,7 @@ void main() {
     float ambient = float(al + uint(1)) * 0.0625;
 
     /* Calculate ambient occlusion */
-    fragment_ambient = (1.0 - float(ao) * 0.03125) * ambient;
+    fragment_ambient = (1.0 - float(ao) * 0.03125 * 0.7) * ambient;
 
     /* Calculate UV coordinates */
     fragment_uv = vec2(du * S, dv * S);
