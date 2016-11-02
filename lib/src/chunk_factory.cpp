@@ -515,7 +515,7 @@ namespace konstructs {
         // count exposed faces
         int faces = 0;
         CHUNK_FOR_EACH(self, ex, ey, ez, eb) {
-            if (eb.type <= 0) {
+            if (state[eb.type] == STATE_GAS) {
                 continue;
             }
             int x = ex - ox;
@@ -546,7 +546,7 @@ namespace konstructs {
         int offset = 0;
 
         CHUNK_FOR_EACH(self, ex, ey, ez, eb) {
-            if (eb.type <= 0) {
+            if (state[eb.type] == STATE_GAS) {
                 continue;
             }
             int x = ex - ox;
