@@ -507,7 +507,9 @@ void make_plant(
             *(d++) = d1;
             int du = (blocks[block.type][i] % 16) + (uvs[i][j][0] ? 1 : 0);
             int dv = (blocks[block.type][i] / 16) + (uvs[i][j][1] ? 1 : 0);
-            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (block.ambient << OFF_AL);
+            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (block.ambient << OFF_AL) +
+                (block.r << OFF_R) + (block.g << OFF_G) +
+                (block.b << OFF_B) + (block.light << OFF_LIGHT);
             *(d++) = d2;
         }
     }
