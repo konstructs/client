@@ -1,6 +1,8 @@
 #ifndef _chunk_h_
 #define _chunk_h_
 
+#include <unordered_map>
+#include <memory>
 #include <utility>
 #include <Eigen/Geometry>
 #include "optional.hpp"
@@ -27,10 +29,10 @@ namespace konstructs {
 
     class ChunkData {
     public:
-        ChunkData(const Vector3i _position, char *compressed, const int size, uint8_t *buffer);
+        ChunkData(const Vector3i _position, char *compressed, const int size, uint8_t *buffer,
+                  std::unordered_map<uint16_t, std::shared_ptr<BlockData>> cached_data);
         ChunkData(const Vector3i position, const uint32_t revision, BlockData *blocks);
         ChunkData(const uint16_t type);
-        ~ChunkData();
         BlockData get(const Vector3i &pos) const;
         std::shared_ptr<ChunkData> set(const Vector3i &pos, const BlockData &data) const;
         optional<pair<Block, Block>> get(const Vector3f &camera_position,
@@ -39,7 +41,7 @@ namespace konstructs {
                                          const BlockTypeInfo &blocks) const;
         const Vector3i position;
         uint32_t revision;
-        BlockData *blocks;
+        std::shared_ptr<BlockData> blocks;
     };
 
     extern std::shared_ptr<ChunkData> SOLID_CHUNK;

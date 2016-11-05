@@ -12,6 +12,40 @@ namespace konstructs {
     std::shared_ptr<ChunkData> SOLID_CHUNK(std::make_shared<ChunkData>(SOLID_TYPE));
     std::shared_ptr<ChunkData> VACUUM_CHUNK(std::make_shared<ChunkData>(VACUUM_TYPE));
 
+
+    std::shared_ptr<BlockData> read_chunk_data(uint8_t *buffer, std::unordered_map<uint16_t, std::shared_ptr<BlockData>> cached_data) {
+        BlockData *blocks = new BlockData[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+        uint16_t chunk_type = buffer[0] + (buffer[1] << 8);
+        bool use_cached = true;
+        for(int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++) {
+            blocks[i].type = buffer[i * BLOCK_SIZE] + (buffer[i * BLOCK_SIZE + 1] << 8);
+            blocks[i].health = buffer[i * BLOCK_SIZE + 2] + ((buffer[i * BLOCK_SIZE + 3] & 0x07) << 8);
+            blocks[i].direction = (buffer[i * BLOCK_SIZE + 3] & 0xE0) >> 5;
+            blocks[i].rotation = (buffer[i * BLOCK_SIZE + 3] & 0x18) >> 3;
+            blocks[i].ambient = (buffer[i * BLOCK_SIZE + 4] & 0xF);
+            blocks[i].r = (buffer[i * BLOCK_SIZE + 4] & 0xF0) >> 4;
+            blocks[i].g = (buffer[i * BLOCK_SIZE + 5] & 0xF);
+            blocks[i].b = (buffer[i * BLOCK_SIZE + 5] & 0xF0) >> 4;
+            blocks[i].light = (buffer[i * BLOCK_SIZE + 6] & 0xF);
+            if(blocks[i].type != chunk_type || blocks[i].light > 0 || blocks[i].ambient < AMBIENT_LIGHT_FULL)
+                use_cached = false;
+        }
+        if(use_cached) {
+            try {
+                auto r = cached_data.at(chunk_type);
+                delete[] blocks;
+                return r;
+            } catch(std::out_of_range e)  {
+                std::shared_ptr<BlockData> r(blocks, std::default_delete<BlockData[]>());
+                cached_data.insert({chunk_type, r});
+                return r;
+            }
+        } else {
+            std::shared_ptr<BlockData> r(blocks, std::default_delete<BlockData[]>());
+            return r;
+        }
+    }
+
     int chunked_int(int p) {
         if(p < 0) {
             return (p - CHUNK_SIZE + 1) / CHUNK_SIZE;
@@ -32,51 +66,39 @@ namespace konstructs {
         return chunked_vec_int(position.cast<int>());
     }
 
-    ChunkData::ChunkData(const Vector3i position, char *compressed, const int size, uint8_t *buffer):
+    ChunkData::ChunkData(const Vector3i position, char *compressed, const int size, uint8_t *buffer,
+                         std::unordered_map<uint16_t, std::shared_ptr<BlockData>> cached_data):
         position(position) {
-        blocks = new BlockData[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
         int out_size = inflate_data(compressed + BLOCKS_HEADER_SIZE,
                                     size - BLOCKS_HEADER_SIZE,
                                     (char*)buffer, BLOCK_BUFFER_SIZE);
         revision =
-            buffer[2] +
-            (buffer[2 + 1] << 8) +
-            (buffer[2 + 2] << 16) +
-            (buffer[2 + 3] << 24);
-
-        for(int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++) {
-            blocks[i].type = buffer[i * BLOCK_SIZE] + (buffer[i * BLOCK_SIZE + 1] << 8);
-            blocks[i].health = buffer[i * BLOCK_SIZE + 2] + ((buffer[i * BLOCK_SIZE + 3] & 0x07) << 8);
-            blocks[i].direction = (buffer[i * BLOCK_SIZE + 3] & 0xE0) >> 5;
-            blocks[i].rotation = (buffer[i * BLOCK_SIZE + 3] & 0x18) >> 3;
-            blocks[i].ambient = (buffer[i * BLOCK_SIZE + 4] & 0xF);
-            blocks[i].r = (buffer[i * BLOCK_SIZE + 4] & 0xF0) >> 4;
-            blocks[i].g = (buffer[i * BLOCK_SIZE + 5] & 0xF);
-            blocks[i].b = (buffer[i * BLOCK_SIZE + 5] & 0xF0) >> 4;
-            blocks[i].light = (buffer[i * BLOCK_SIZE + 6] & 0xF);
-        }
+            compressed[2] +
+            (compressed[2 + 1] << 8) +
+            (compressed[2 + 2] << 16) +
+            (compressed[2 + 3] << 24);
+        blocks = read_chunk_data(buffer, cached_data);
     }
 
     ChunkData::ChunkData(const uint16_t type) : revision(0) {
-        blocks = new BlockData[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+        BlockData *b = new BlockData[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
         for(int i = 0; i < CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE; i++) {
-            blocks[i].type = type;
-            blocks[i].health = MAX_HEALTH;
-            blocks[i].direction = DIRECTION_UP;
-            blocks[i].rotation = ROTATION_IDENTITY;
-            blocks[i].ambient = AMBIENT_LIGHT_DARK;
-            blocks[i].r = 0;
-            blocks[i].g = 0;
-            blocks[i].b = 0;
-            blocks[i].light = 0;
+            b[i].type = type;
+            b[i].health = MAX_HEALTH;
+            b[i].direction = DIRECTION_UP;
+            b[i].rotation = ROTATION_IDENTITY;
+            b[i].ambient = AMBIENT_LIGHT_DARK;
+            b[i].r = 0;
+            b[i].g = 0;
+            b[i].b = 0;
+            b[i].light = 0;
         }
+        blocks = std::shared_ptr<BlockData>(b, std::default_delete<BlockData[]>());
     }
 
-    ChunkData::ChunkData(const Vector3i position, const uint32_t revision, BlockData *blocks) :
-        position(position), revision(revision), blocks(blocks) {}
-
-    ChunkData::~ChunkData() {
-        delete[] blocks;
+    ChunkData::ChunkData(const Vector3i position, const uint32_t revision, BlockData *b) :
+        position(position), revision(revision) {
+        blocks = std::shared_ptr<BlockData>(b, std::default_delete<BlockData[]>());
     }
 
     BlockData ChunkData::get(const Vector3i &pos) const {
@@ -88,7 +110,7 @@ namespace konstructs {
         if(lx < CHUNK_SIZE && ly < CHUNK_SIZE && lz < CHUNK_SIZE &&
            lx >= 0 && ly >= 0 && lz >= 0) {
             int i = lx+ly*CHUNK_SIZE+lz*CHUNK_SIZE*CHUNK_SIZE;
-            return blocks[i];
+            return blocks.get()[i];
         } else {
             return {0, 0};
         }
@@ -100,7 +122,8 @@ namespace konstructs {
         int lz = pos[2] - position[1] * CHUNK_SIZE;
 
         BlockData *new_blocks = new BlockData[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
-        memcpy(new_blocks, blocks, CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE*sizeof(BlockData));
+        BlockData *b = blocks.get();
+        memcpy(new_blocks, b, CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE*sizeof(BlockData));
 
         new_blocks[lx+ly*CHUNK_SIZE+lz*CHUNK_SIZE*CHUNK_SIZE] = data;
 

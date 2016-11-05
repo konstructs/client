@@ -240,24 +240,24 @@ namespace konstructs {
         std::vector<BlockData> blocks(XZ_SIZE * XZ_SIZE * XZ_SIZE);
         std::vector<char> highest(XZ_SIZE * XZ_SIZE);
 
-        BlockData *above = data.above->blocks;
-        BlockData *below = data.below->blocks;
-        BlockData *left = data.left->blocks;
-        BlockData *right = data.right->blocks;
-        BlockData *front = data.front->blocks;
-        BlockData *back = data.back->blocks;
-        BlockData *above_left = data.above_left->blocks;
-        BlockData *above_right = data.above_right->blocks;
-        BlockData *above_front = data.above_front->blocks;
-        BlockData *above_back = data.above_back->blocks;
-        BlockData *above_left_front = data.above_left_front->blocks;
-        BlockData *above_right_front = data.above_right_front->blocks;
-        BlockData *above_left_back = data.above_left_back->blocks;
-        BlockData *above_right_back = data.above_right_back->blocks;
-        BlockData *left_front = data.left_front->blocks;
-        BlockData *right_front = data.right_front->blocks;
-        BlockData *left_back = data.left_back->blocks;
-        BlockData *right_back = data.right_back->blocks;
+        BlockData *above = data.above->blocks.get();
+        BlockData *below = data.below->blocks.get();
+        BlockData *left = data.left->blocks.get();
+        BlockData *right = data.right->blocks.get();
+        BlockData *front = data.front->blocks.get();
+        BlockData *back = data.back->blocks.get();
+        BlockData *above_left = data.above_left->blocks.get();
+        BlockData *above_right = data.above_right->blocks.get();
+        BlockData *above_front = data.above_front->blocks.get();
+        BlockData *above_back = data.above_back->blocks.get();
+        BlockData *above_left_front = data.above_left_front->blocks.get();
+        BlockData *above_right_front = data.above_right_front->blocks.get();
+        BlockData *above_left_back = data.above_left_back->blocks.get();
+        BlockData *above_right_back = data.above_right_back->blocks.get();
+        BlockData *left_front = data.left_front->blocks.get();
+        BlockData *right_front = data.right_front->blocks.get();
+        BlockData *left_back = data.left_back->blocks.get();
+        BlockData *right_back = data.right_back->blocks.get();
 
         const char *is_transparent = block_data.is_transparent;
         const char *is_plant = block_data.is_plant;
@@ -268,7 +268,7 @@ namespace konstructs {
         int oz = - CHUNK_SIZE - 1;
 
         /* Populate the blocks array with the chunk itself */
-        const BlockData *self = data.self->blocks;
+        const BlockData *self = data.self->blocks.get();
 
         CHUNK_FOR_EACH(self, ex, ey, ez, eb) {
             int x = ex - ox;

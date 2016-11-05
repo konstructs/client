@@ -7,6 +7,7 @@
 #include <memory>
 #include <queue>
 #include <unordered_set>
+#include <unordered_map>
 #include <thread>
 #include <Eigen/Geometry>
 #include "matrix.h"
@@ -115,6 +116,8 @@ namespace konstructs {
         bool logged_in;
         std::string error_message;
         char *inflation_buffer;
+        std::unordered_map<uint16_t, std::shared_ptr<BlockData>> cached_data;
+
         /* Chunk worker */
         Vector3i player_chunk;
         int radius;
