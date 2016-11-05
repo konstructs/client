@@ -49,6 +49,11 @@ namespace konstructs {
             blocks[i].health = buffer[i * BLOCK_SIZE + 2] + ((buffer[i * BLOCK_SIZE + 3] & 0x07) << 8);
             blocks[i].direction = (buffer[i * BLOCK_SIZE + 3] & 0xE0) >> 5;
             blocks[i].rotation = (buffer[i * BLOCK_SIZE + 3] & 0x18) >> 3;
+            blocks[i].ambient = (buffer[i * BLOCK_SIZE + 4] & 0xF);
+            blocks[i].r = (buffer[i * BLOCK_SIZE + 4] & 0xF0) >> 4;
+            blocks[i].g = (buffer[i * BLOCK_SIZE + 5] & 0xF);
+            blocks[i].b = (buffer[i * BLOCK_SIZE + 5] & 0xF0) >> 4;
+            blocks[i].light = (buffer[i * BLOCK_SIZE + 6] & 0xF);
         }
     }
 
@@ -59,6 +64,11 @@ namespace konstructs {
             blocks[i].health = MAX_HEALTH;
             blocks[i].direction = DIRECTION_UP;
             blocks[i].rotation = ROTATION_IDENTITY;
+            blocks[i].ambient = AMBIENT_LIGHT_DARK;
+            blocks[i].r = 0;
+            blocks[i].g = 0;
+            blocks[i].b = 0;
+            blocks[i].light = 0;
         }
     }
 

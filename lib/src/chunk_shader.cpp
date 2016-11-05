@@ -58,7 +58,7 @@ namespace konstructs {
         sky_sampler(uniformId("sky_sampler")),
         damage_sampler(uniformId("damage_sampler")),
         fog_distance(uniformId("fog_distance")),
-        light_color(uniformId("light_color")),
+        ambient_color(uniformId("ambient_color")),
         ambient_light(uniformId("ambient_light")),
         timer(uniformId("timer")),
         camera(uniformId("camera")),
@@ -89,7 +89,7 @@ namespace konstructs {
                 c.set(fog_distance, view_distance);
                 float value = min(1.0f, current_daylight);
                 float v = value * 0.3 + 0.15;
-                c.set(light_color, Vector3f(v, v, v));
+                c.set(ambient_color, Vector3f(v, v, v));
                 Vector3f ambient((float)sin(M_PI*current_daylight)/2 + v, (float)sin(M_PI*current_daylight)/4 + v, v);
                 c.set(ambient_light, ambient);
                 c.set(timer, current_timer);

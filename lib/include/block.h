@@ -9,6 +9,7 @@
 #define SOLID_TYPE 65535
 #define BLOCK_TYPES 65536
 #define MAX_HEALTH 2047
+#define AMBIENT_LIGHT_DARK 0
 
 #define DIRECTION_UP 0
 #define DIRECTION_DOWN 1
@@ -45,6 +46,11 @@ namespace konstructs {
         uint16_t health;
         uint8_t direction;
         uint8_t rotation;
+        uint8_t ambient;
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t light;
     };
 
     class Block {

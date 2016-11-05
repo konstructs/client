@@ -515,7 +515,7 @@ namespace konstructs {
         // count exposed faces
         int faces = 0;
         CHUNK_FOR_EACH(self, ex, ey, ez, eb) {
-            if (eb.type <= 0) {
+            if (state[eb.type] == STATE_GAS) {
                 continue;
             }
             int x = ex - ox;
@@ -546,19 +546,30 @@ namespace konstructs {
         int offset = 0;
 
         CHUNK_FOR_EACH(self, ex, ey, ez, eb) {
-            if (eb.type <= 0) {
+            if (state[eb.type] == STATE_GAS) {
                 continue;
             }
             int x = ex - ox;
             int y = ey - oy;
             int z = ez - oz;
-            int f1 = face_visible(eb.type, blocks[XYZ(x - 1, y, z)].type, is_transparent, state);
-            int f2 = face_visible(eb.type, blocks[XYZ(x + 1, y, z)].type, is_transparent, state);
-            int f3 = face_visible(eb.type, blocks[XYZ(x, y + 1, z)].type, is_transparent, state);
-            int f4 = face_visible(eb.type, blocks[XYZ(x, y - 1, z)].type, is_transparent, state);
-            int f5 = face_visible(eb.type, blocks[XYZ(x, y, z - 1)].type, is_transparent, state);
-            int f6 = face_visible(eb.type, blocks[XYZ(x, y, z + 1)].type, is_transparent, state);
-            int total = f1 + f2 + f3 + f4 + f5 + f6;
+
+            BlockData left_data = blocks[XYZ(x - 1, y, z)];
+            uint8_t left = face_visible(eb.type, left_data.type, is_transparent, state);
+            BlockData right_data = blocks[XYZ(x + 1, y, z)];
+            uint8_t right = face_visible(eb.type, right_data.type, is_transparent, state);
+            BlockData top_data = blocks[XYZ(x, y + 1, z)];
+            uint8_t top = face_visible(eb.type, top_data.type, is_transparent, state);
+            BlockData bottom_data = blocks[XYZ(x, y - 1, z)];
+            uint8_t bottom = face_visible(eb.type, bottom_data.type, is_transparent, state);
+            BlockData front_data = blocks[XYZ(x, y, z - 1)];
+            uint8_t front = face_visible(eb.type, front_data.type, is_transparent, state);
+            BlockData back_data = blocks[XYZ(x, y, z + 1)];
+            uint8_t back = face_visible(eb.type, back_data.type, is_transparent, state);
+
+            uint8_t faces[6] = {left, right, top, bottom, front, back};
+            BlockData face_data[6] = {left_data, right_data, top_data, bottom_data, front_data, back_data};
+
+            int total = left + right + top + bottom + front + back;
             if (total == 0) {
                 continue;
             }
@@ -597,8 +608,7 @@ namespace konstructs {
             }
             else {
                 int damage = (int)(8.0f - ((float)eb.health / (float)(MAX_HEALTH + 1)) * 8.0f);
-                make_cube2(vertices + offset, ao,
-                           f1, f2, f3, f4, f5, f6,
+                make_cube2(vertices + offset, ao, faces, face_data,
                            ex, ey, ez, eb, damage, block_data.blocks);
             }
             offset += total * 12;

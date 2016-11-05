@@ -7,7 +7,7 @@
 #include "shader.h" //TODO: remove
 #include "block.h"
 
-#define BLOCK_SIZE 4
+#define BLOCK_SIZE 7
 #define CHUNK_SIZE 32
 #define BLOCK_BUFFER_SIZE (CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE*BLOCK_SIZE)
 #define BLOCKS_HEADER_SIZE 6

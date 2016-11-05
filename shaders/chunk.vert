@@ -83,6 +83,27 @@ const uint OFF_DU = uint(0);
 const uint OFF_DV = uint(5);
 const uint MASK_UV = uint(0x1F);
 
+/* Second comes the ambient light level of the block encoded
+ * in 4 bits
+ */
+const uint OFF_AL = uint(10);
+const uint MASK_AL = uint(0x0F);
+
+/* Third comes the light color and light level encoded with 4 bits
+ * per RGB channel and 4 bits of strength
+ */
+const uint OFF_R = uint(14);
+const uint MASK_R = uint(0x0F);
+
+const uint OFF_G = uint(18);
+const uint MASK_G = uint(0x0F);
+
+const uint OFF_B = uint(22);
+const uint MASK_B = uint(0x0F);
+
+const uint OFF_LIGHT = uint(26);
+const uint MASK_LIGHT = uint(0x0F);
+
 /* UV stepping */
 const float S = (1.0 / 16.0);
 const float DS = (1.0 / 8.0);
@@ -114,8 +135,15 @@ out vec2 damage_uv;
 /* Damage */
 flat out float damage_factor;
 
-/* The real ao value */
+/* The ambient value */
+out float ambient;
 out float fragment_ao;
+
+
+
+/* The light value */
+out vec3 light;
+
 out float fog_factor;
 out float fog_height;
 
@@ -155,6 +183,15 @@ void main() {
     uint du = (d2 >> OFF_DU) & MASK_UV;
     uint dv = (d2 >> OFF_DV) & MASK_UV;
 
+    /* Extract the ambient light */
+    uint al = (d2 >> OFF_AL) & MASK_AL;
+
+    /* Extract light */
+    uint r = (d2 >> OFF_R) & MASK_R;
+    uint g = (d2 >> OFF_G) & MASK_G;
+    uint b = (d2 >> OFF_B) & MASK_B;
+    uint light_level = (d2 >> OFF_LIGHT) & MASK_LIGHT;
+
     /* All values extracted, shader code starts here */
 
     /* Create a translation matrix from the block position */
@@ -173,8 +210,19 @@ void main() {
     /* Apply projection */
     gl_Position = matrix * global_position;
 
+    /* Calculate light */
+    float rf = float(r) * 0.0625;
+    float gf = float(g) * 0.0625;
+    float bf = float(b) * 0.0625;
+    float lf = float(light_level) * 0.0625;
+
+    light = vec3(lf * rf, lf * gf, lf * bf);
+
+    /* Calculate the ambient light */
+    ambient = float(al + uint(1)) * 0.0625;
+
     /* Calculate ambient occlusion */
-    fragment_ao = min(1.0, 0.3 + (1.0 - float(ao) * 0.03125) * 0.7);
+    fragment_ao = (1.0 - float(ao) * 0.03125 * 0.7);
 
     /* Calculate UV coordinates */
     fragment_uv = vec2(du * S, dv * S);
@@ -182,7 +230,7 @@ void main() {
 
     damage_factor = (damage_u * DS) * damage_weight;
 
-    diffuse = min(1.0, max(0.0, dot(normals[normal], light_direction)));
+    diffuse = clamp(dot(normals[normal], light_direction), 0.0, 1.0);
 
     float camera_distance = distance(camera, vec3(global_position));
     fog_factor = pow(clamp(camera_distance / fog_distance, 0.0, 1.0), 4.0);

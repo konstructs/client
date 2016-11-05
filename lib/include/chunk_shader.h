@@ -42,7 +42,7 @@ namespace konstructs {
         const GLuint sky_sampler;
         const GLuint damage_sampler;
         const GLuint fog_distance;
-        const GLuint light_color;
+        const GLuint ambient_color;
         const GLuint ambient_light;
         const GLuint timer;
         const GLuint camera;
