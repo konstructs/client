@@ -30,7 +30,7 @@ namespace konstructs {
     class ChunkData {
     public:
         ChunkData(const Vector3i _position, char *compressed, const int size, uint8_t *buffer,
-                  std::unordered_map<uint16_t, std::shared_ptr<BlockData>> cached_data);
+                  std::unordered_map<uint16_t, std::shared_ptr<BlockData>> &cached_data);
         ChunkData(const Vector3i position, const uint32_t revision, BlockData *blocks);
         ChunkData(const uint16_t type);
         BlockData get(const Vector3i &pos) const;

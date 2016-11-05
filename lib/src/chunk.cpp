@@ -13,7 +13,7 @@ namespace konstructs {
     std::shared_ptr<ChunkData> VACUUM_CHUNK(std::make_shared<ChunkData>(VACUUM_TYPE));
 
 
-    std::shared_ptr<BlockData> read_chunk_data(uint8_t *buffer, std::unordered_map<uint16_t, std::shared_ptr<BlockData>> cached_data) {
+    std::shared_ptr<BlockData> read_chunk_data(uint8_t *buffer, std::unordered_map<uint16_t, std::shared_ptr<BlockData>> &cached_data) {
         BlockData *blocks = new BlockData[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
         uint16_t chunk_type = buffer[0] + (buffer[1] << 8);
         bool use_cached = true;
@@ -33,10 +33,12 @@ namespace konstructs {
         if(use_cached) {
             try {
                 auto r = cached_data.at(chunk_type);
+                std::cout<<"Got cached!"<<std::endl;
                 delete[] blocks;
                 return r;
             } catch(std::out_of_range e)  {
                 std::shared_ptr<BlockData> r(blocks, std::default_delete<BlockData[]>());
+                std::cout<<"Add to cached!"<<std::endl;
                 cached_data.insert({chunk_type, r});
                 return r;
             }
@@ -67,7 +69,7 @@ namespace konstructs {
     }
 
     ChunkData::ChunkData(const Vector3i position, char *compressed, const int size, uint8_t *buffer,
-                         std::unordered_map<uint16_t, std::shared_ptr<BlockData>> cached_data):
+                         std::unordered_map<uint16_t, std::shared_ptr<BlockData>> &cached_data):
         position(position) {
         int out_size = inflate_data(compressed + BLOCKS_HEADER_SIZE,
                                     size - BLOCKS_HEADER_SIZE,
