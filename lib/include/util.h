@@ -31,4 +31,14 @@ void load_png_texture(const char *file_name);
 void load_png_texture_from_buffer(const char *in, int size);
 int file_exist(const char *filename);
 
+namespace konstructs {
+    template< typename T >
+    struct array_deleter
+    {
+        void operator ()( T const * p)
+        {
+            delete[] p;
+        }
+    };
+};
 #endif

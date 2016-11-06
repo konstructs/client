@@ -7,6 +7,7 @@
 #include <memory>
 #include <queue>
 #include <unordered_set>
+#include <unordered_map>
 #include <thread>
 #include <Eigen/Geometry>
 #include "matrix.h"
@@ -75,8 +76,8 @@ namespace konstructs {
         void set_logged_in(bool state);
         bool is_logged_in();
         vector<shared_ptr<Packet>> receive(const int max);
-        optional<shared_ptr<ChunkData>> receive_prio_chunk(const Vector3i pos);
-        vector<shared_ptr<ChunkData>> receive_chunks(const int max);
+        optional<ChunkData> receive_prio_chunk(const Vector3i pos);
+        vector<ChunkData> receive_chunks(const int max);
         void set_player_chunk(const Vector3i &chunk);
         void set_radius(int r);
         void set_loaded_radius(int r);
@@ -110,11 +111,13 @@ namespace konstructs {
         std::thread *send_thread;
         std::thread *chunk_thread;
         std::queue<shared_ptr<Packet>> packets;
-        std::deque<shared_ptr<ChunkData>> chunks;
+        std::deque<ChunkData> chunks;
         bool connected;
         bool logged_in;
         std::string error_message;
         char *inflation_buffer;
+        std::unordered_map<uint16_t, std::shared_ptr<BlockData>> cached_data;
+
         /* Chunk worker */
         Vector3i player_chunk;
         int radius;

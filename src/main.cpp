@@ -305,10 +305,10 @@ private:
                                 block.direction = direction;
                                 block.rotation = rotation;
                             }
-                            std::shared_ptr<ChunkData> updated_chunk =
-                                world.chunk_at(l.first.position)->set(l.first.position, block);
+                            ChunkData updated_chunk =
+                                world.chunk_at(l.first.position).set(l.first.position, block);
                             world.insert(updated_chunk);
-                            model_factory.create_models({updated_chunk->position}, world);
+                            model_factory.create_models({updated_chunk.position}, world);
                         }
                         click_delay = MOUSE_CLICK_DELAY_IN_FRAMES;
                         client.click_at(1, l.first.position, translate_button(GLFW_MOUSE_BUTTON_2), hud.get_selection(),
@@ -396,7 +396,7 @@ private:
         /* Insert prio chunk into world */
         if(prio) {
             world.insert(*prio);
-            model_factory.create_models({(*prio)->position}, world);
+            model_factory.create_models({(*prio).position}, world);
         }
         auto new_chunks = client.receive_chunks(1);
         if(!new_chunks.empty()) {
@@ -404,7 +404,7 @@ private:
             positions.reserve(new_chunks.size());
             for(auto chunk : new_chunks) {
                 world.insert(chunk);
-                positions.push_back(chunk->position);
+                positions.push_back(chunk.position);
             }
             model_factory.create_models(positions, world);
         }

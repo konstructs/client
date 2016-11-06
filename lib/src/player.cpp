@@ -108,8 +108,8 @@ namespace konstructs {
             } else {
                 // Get middle of block
                 Vector3i iPos((int)(position[0] + 0.5f), (int)(position[1]), (int)(position[2] + 0.5f));
-                ChunkData *chunk = world.chunk_at(iPos).get();
-                if(blocks.state[chunk->get(iPos).type] == STATE_LIQUID) {
+                ChunkData chunk = world.chunk_at(iPos);
+                if(blocks.state[chunk.get(iPos).type] == STATE_LIQUID) {
                     dy = 5.5;
                 }
             }
@@ -156,7 +156,7 @@ namespace konstructs {
         int k = chunked(camera_position[1]);
         const auto &atAndAround = world.atAndAround({p, q, k});
         for (const auto &chunk: atAndAround) {
-            const auto &seen = chunk->get(camera_position, v, 8.0f, blocks);
+            const auto &seen = chunk.get(camera_position, v, 8.0f, blocks);
             if (seen) {
                 auto h = seen->second;
                 float d = sqrtf(powf(h.position[0] - camera_position[0], 2) +
