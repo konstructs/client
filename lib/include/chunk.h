@@ -34,18 +34,18 @@ namespace konstructs {
         ChunkData(const Vector3i position, const uint32_t revision, BlockData *blocks);
         ChunkData(const uint16_t type);
         BlockData get(const Vector3i &pos) const;
-        std::shared_ptr<ChunkData> set(const Vector3i &pos, const BlockData &data) const;
+        ChunkData set(const Vector3i &pos, const BlockData &data) const;
         optional<pair<Block, Block>> get(const Vector3f &camera_position,
                                          const Vector3f &camera_direction,
                                          const float max_distance,
                                          const BlockTypeInfo &blocks) const;
-        const Vector3i position;
+        Vector3i position;
         uint32_t revision;
         std::shared_ptr<BlockData> blocks;
     };
 
-    extern std::shared_ptr<ChunkData> SOLID_CHUNK;
-    extern std::shared_ptr<ChunkData> VACUUM_CHUNK;
+    extern ChunkData SOLID_CHUNK;
+    extern ChunkData VACUUM_CHUNK;
 
 };
 

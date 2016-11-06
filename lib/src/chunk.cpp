@@ -9,8 +9,8 @@
 namespace konstructs {
     using nonstd::nullopt;
 
-    std::shared_ptr<ChunkData> SOLID_CHUNK(std::make_shared<ChunkData>(SOLID_TYPE));
-    std::shared_ptr<ChunkData> VACUUM_CHUNK(std::make_shared<ChunkData>(VACUUM_TYPE));
+    ChunkData SOLID_CHUNK(SOLID_TYPE);
+    ChunkData VACUUM_CHUNK(VACUUM_TYPE);
 
 
     std::shared_ptr<BlockData> read_chunk_data(uint8_t *buffer, std::unordered_map<uint16_t, std::shared_ptr<BlockData>> &cached_data) {
@@ -33,12 +33,10 @@ namespace konstructs {
         if(use_cached) {
             try {
                 auto r = cached_data.at(chunk_type);
-                std::cout<<"Got cached!"<<std::endl;
                 delete[] blocks;
                 return r;
             } catch(std::out_of_range e)  {
                 std::shared_ptr<BlockData> r(blocks, std::default_delete<BlockData[]>());
-                std::cout<<"Add to cached!"<<std::endl;
                 cached_data.insert({chunk_type, r});
                 return r;
             }
@@ -118,7 +116,7 @@ namespace konstructs {
         }
     }
 
-    std::shared_ptr<ChunkData> ChunkData::set(const Vector3i &pos, const BlockData &data) const {
+    ChunkData ChunkData::set(const Vector3i &pos, const BlockData &data) const {
         int lx = pos[0] - position[0] * CHUNK_SIZE;
         int ly = pos[1] - position[2] * CHUNK_SIZE;
         int lz = pos[2] - position[1] * CHUNK_SIZE;
@@ -131,7 +129,7 @@ namespace konstructs {
 
         // A chunk that we altered ourselves is treated as invalid
 
-        return std::make_shared<ChunkData>(position, 0, new_blocks);
+        return ChunkData(position, 0, new_blocks);
     }
 
     /**

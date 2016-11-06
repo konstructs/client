@@ -125,7 +125,7 @@ namespace konstructs {
         Vector3i position(p, q, k);
         received_chunk(position);
         const int blocks_size = packet->size - 3 * sizeof(int);
-        auto chunk = make_shared<ChunkData>(position, pos, blocks_size, (uint8_t*)inflation_buffer, cached_data);
+        auto chunk = ChunkData(position, pos, blocks_size, (uint8_t*)inflation_buffer, cached_data);
         std::lock_guard<std::mutex> lock_packets(packets_mutex);
         chunks.push_back(chunk);
     }
@@ -193,27 +193,27 @@ namespace konstructs {
         return head;
     }
 
-    optional<shared_ptr<ChunkData>> Client::receive_prio_chunk(const Vector3i pos) {
+    optional<ChunkData> Client::receive_prio_chunk(const Vector3i pos) {
         std::lock_guard<std::mutex> lock_packets(packets_mutex);
         for(auto it = chunks.begin(); it != chunks.end(); ++it) {
             auto chunk = *it;
-            Vector3i chunk_position = chunk->position;
+            Vector3i chunk_position = chunk.position;
             int dp = chunk_position[0] - pos[0];
             int dq = chunk_position[1] - pos[1];
             int dk = chunk_position[2] - pos[2];
             if(dp >= -1 && dp <= 1 && dq >= -1 && dq <= 1 && dk >= -1 && dk <= 1) {
                 chunks.erase(it);
-                return optional<shared_ptr<ChunkData>>(chunk);
+                return optional<ChunkData>(chunk);
             }
         }
         return nullopt;
     }
 
-    vector<shared_ptr<ChunkData>> Client::receive_chunks(const int max) {
+    vector<ChunkData> Client::receive_chunks(const int max) {
         std::lock_guard<std::mutex> lock_packets(packets_mutex);
         int maxOrSize = std::min(max, (int)chunks.size());
         auto last = chunks.begin() + maxOrSize;
-        vector<shared_ptr<ChunkData>> head(chunks.begin(), last);
+        vector<ChunkData> head(chunks.begin(), last);
         chunks.erase(chunks.begin(), last);
         return head;
     }

@@ -10,7 +10,7 @@ namespace konstructs {
 
     void World::delete_unused_chunks(const Vector3i player_chunk, const int radi) {
         for ( auto it = chunks.begin(); it != chunks.end();) {
-            if ((it->second->position - player_chunk).norm() > radi) {
+            if ((it->second.position - player_chunk).norm() > radi) {
                 it = chunks.erase(it);
             } else {
                 ++it;
@@ -18,18 +18,18 @@ namespace konstructs {
         }
     }
 
-    void World::insert(std::shared_ptr<ChunkData> data) {
+    void World::insert(ChunkData data) {
         /* Overwrite any existing chunk, we always want the latest data */
-        const Vector3i pos = data->position;
+        const Vector3i pos = data.position;
         chunks.erase(pos);
         chunks.insert({pos, data});
     }
 
     const BlockData World::get_block(const Vector3i &block_pos) const {
-        return chunk_at(block_pos)->get(block_pos);
+        return chunk_at(block_pos).get(block_pos);
     }
 
-    const std::shared_ptr<ChunkData> World::chunk_at(const Vector3i &block_pos) const {
+    const ChunkData World::chunk_at(const Vector3i &block_pos) const {
         try {
             return chunks.at(chunked_vec_int(block_pos));
         } catch(std::out_of_range e) {
@@ -38,7 +38,7 @@ namespace konstructs {
 
     }
 
-    const optional<std::shared_ptr<ChunkData>> World::chunk_opt(const Vector3i &chunk_pos) const {
+    const optional<ChunkData> World::chunk_opt(const Vector3i &chunk_pos) const {
         try {
             return chunks.at(chunk_pos);
         } catch(std::out_of_range e)  {
@@ -46,8 +46,8 @@ namespace konstructs {
         }
     }
 
-    const std::vector<std::shared_ptr<ChunkData>> World::atAndAround(const Vector3i &pos) const {
-        std::vector<std::shared_ptr<ChunkData>> result;
+    const std::vector<ChunkData> World::atAndAround(const Vector3i &pos) const {
+        std::vector<ChunkData> result;
         for(int i = -1; i <= 1; i++) {
             for(int j = -1; j <= 1; j++) {
                 for(int k = -1; k <= 1; k++) {
@@ -62,11 +62,11 @@ namespace konstructs {
         return result;
     }
 
-    std::unordered_map<Vector3i, std::shared_ptr<ChunkData>, matrix_hash<Vector3i>>::const_iterator World::find(const Vector3i &pos) const {
+    std::unordered_map<Vector3i, ChunkData, matrix_hash<Vector3i>>::const_iterator World::find(const Vector3i &pos) const {
         return chunks.find(pos);
     }
 
-    std::unordered_map<Vector3i, std::shared_ptr<ChunkData>, matrix_hash<Vector3i>>::const_iterator World::end() const {
+    std::unordered_map<Vector3i, ChunkData, matrix_hash<Vector3i>>::const_iterator World::end() const {
         return chunks.end();
     }
 
