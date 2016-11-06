@@ -28,8 +28,8 @@ namespace konstructs {
 
     const int NO_CHUNK_FOUND = 0x0FFFFFFF;
 
-    Client::Client() :
-        connected(false),
+    Client::Client(bool debug_mode) :
+        connected(false), debug_mode(debug_mode),
         player_chunk(0,0,0), radius(0), loaded_radius(0) {
         recv_thread = new std::thread(&Client::recv_worker, this);
         send_thread = new std::thread(&Client::send_worker, this);
@@ -131,15 +131,21 @@ namespace konstructs {
     }
 
     void Client::recv_worker() {
-        std::cout<<"[Recv worker]: started"<<std::endl;
+        if (debug_mode) {
+            std::cout<<"[Recv worker]: started"<<std::endl;
+        }
         while(1) {
             try {
-                std::cout<<"[Recv worker]: waiting for connection"<<std::endl;
+                if (debug_mode) {
+                    std::cout<<"[Recv worker]: waiting for connection"<<std::endl;
+                }
                 // Wait for an open connection
                 std::unique_lock<std::mutex> ulock_connected(mutex_connected);
                 cv_connected.wait(ulock_connected, [&] { return connected; });
                 ulock_connected.unlock();
-                std::cout<<"[Recv worker]: connection established, entering main loop"<<std::endl;
+                if (debug_mode) {
+                    std::cout<<"[Recv worker]: connection established, entering main loop"<<std::endl;
+                }
                 int size;
                 while (connected) {
                     // Read header from network
@@ -243,15 +249,21 @@ namespace konstructs {
     }
 
     void Client::send_worker() {
-        std::cout<<"[Send worker]: started"<<std::endl;
+        if (debug_mode) {
+            std::cout<<"[Send worker]: started"<<std::endl;
+        }
         while(1) {
             try {
-                std::cout<<"[Send worker]: waiting for connection"<<std::endl;
+                if (debug_mode) {
+                    std::cout<<"[Send worker]: waiting for connection"<<std::endl;
+                }
                 // Wait for an open connection
                 std::unique_lock<std::mutex> ulock_connected(mutex_connected);
                 cv_connected.wait(ulock_connected, [&] { return connected; });
                 ulock_connected.unlock();
-                std::cout<<"[Send worker]: connection established, entering main loop"<<std::endl;
+                if (debug_mode) {
+                    std::cout<<"[Send worker]: connection established, entering main loop"<<std::endl;
+                }
                 int size;
                 while (connected) {
                     // Wait for an open connection
@@ -428,14 +440,21 @@ namespace konstructs {
     }
 
     void Client::chunk_worker() {
-        std::cout<<"[Chunk worker]: started"<<std::endl;
+        if (debug_mode) {
+            std::cout<<"[Chunk worker]: started"<<std::endl;
+        }
         while(1) {
-            std::cout<<"[Chunk worker]: waiting for connection and user log in"<<std::endl;
+            if (debug_mode) {
+                std::cout<<"[Chunk worker]: waiting for connection and user log in"<<std::endl;
+            }
             // Wait for an open connection
             std::unique_lock<std::mutex> ulock_connected(mutex_connected);
             cv_connected.wait(ulock_connected, [&] { return connected && logged_in; });
             ulock_connected.unlock();
-            std::cout<<"[Chunk worker]: connection established and user logged in, entering main loop"<<std::endl;
+            if (debug_mode) {
+                std::cout << "[Chunk worker]: connection established and user logged in, entering main loop"
+                          << std::endl;
+            }
 
             int r = 0; // Stores the current radius
             int old_r = 0; // Stores the previous radius

@@ -73,7 +73,7 @@ public:
         model_factory(blocks),
         radius(5),
         max_radius(20),
-        client(),
+        client(debug_mode),
         view_distance((float)radius*CHUNK_SIZE),
         fov(70.0f),
         near_distance(0.125f),
