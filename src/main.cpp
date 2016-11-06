@@ -629,7 +629,10 @@ private:
             if (username != "" &&
                     password != "" &&
                     hostname != "") {
-                hide_menu();
+                // Note: The mouse pointer is intentionally not locked here.
+                // See: setup_connection()
+                window->dispose();
+                menu_state = false;
                 setup_connection();
             }
         });
@@ -639,18 +642,16 @@ private:
         menu_state = true;
     }
 
-    void hide_menu() {
-        glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        window->dispose();
-        menu_state = false;
-    }
-
-
     void setup_connection() {
         try {
             client.open_connection(username, password, hostname);
             load_textures();
             client.set_connected(true);
+
+            // Lock the mouse _after_ a successful connection. This prevents the
+            // player to get stuck if he or she connects to a server that drops
+            // the SYN.
+            glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         } catch(const std::exception& ex) {
             show_menu(client.get_error_message());
         }
