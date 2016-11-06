@@ -244,6 +244,29 @@ upload-docs: docs
 
 	aws s3 sync ../docs/html/ s3://doc.konstructs.org/client/ --acl public-read --delete
 
+astyle:
+	docker run -ti -v ${PROJECT_DIR}:/build \
+		nsgb/konstructs-build-image-astyle \
+		make docker-astyle -C package
+
+docker-astyle:
+	astyle \
+		--style=java \
+		--indent-namespaces \
+		--indent-preproc-block \
+		--indent-preproc-cond \
+		--add-brackets \
+		--keep-one-line-statements \
+		--convert-tabs \
+		--max-code-length=120 \
+		--recursive \
+		'../src/*.cpp' \
+		'../lib/src/*.cpp' \
+		'../lib/include/*.h'
+
+test: astyle
+	git diff --exit-code
+
 clean:
 	rm -rf \
 		konstructs-client-linux \
@@ -254,7 +277,7 @@ clean:
 		konstructs-client.zip
 	type snapcraft >/dev/null 2>&1 && snapcraft clean
 
-.PHONY: linux osx window clean docs tar zip deb rpm
+.PHONY: linux osx window clean docs tar zip deb rpm test astyle
 .PHONY: docker-deb docker-linux docker-package-prep docker-rpm docker-windows docker-zip
 .PHONY: package-prep
 .PHONY: upload-docs

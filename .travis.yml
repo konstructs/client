@@ -22,11 +22,11 @@ matrix:
     - os: linux
       compiler: gcc
       env:
-        - MAKE_COMMAND="linux tar deb rpm"
+        - MAKE_COMMAND="test linux tar deb rpm"
         - UPLOAD_TO_GH=yes
     - os: linux
       env:
-        - MAKE_COMMAND="windows zip"
+        - MAKE_COMMAND="test windows zip"
         - UPLOAD_TO_GH=yes
     - os: linux
       env: MAKE_COMMAND="docs upload-docs"
@@ -36,6 +36,7 @@ before_install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       sudo pip install awscli
+      sudo apt-get install astyle
     fi
 
 notifications:
