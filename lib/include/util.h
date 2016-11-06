@@ -33,10 +33,8 @@ int file_exist(const char *filename);
 
 namespace konstructs {
     template< typename T >
-    struct array_deleter
-    {
-        void operator ()( T const * p)
-        {
+    struct array_deleter {
+        void operator ()( T const * p) {
             delete[] p;
         }
     };

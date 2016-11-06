@@ -27,8 +27,8 @@ char *load_file(const char *path) {
     int read = fread(data, 1, length, file);
     fclose(file);
     if(read != length) {
-      fprintf(stderr, "Failed to load file %s\n", path);
-      exit(1);
+        fprintf(stderr, "Failed to load file %s\n", path);
+        exit(1);
     }
     return data;
 }
@@ -44,14 +44,13 @@ GLuint gen_buffer(GLsizei size, GLfloat *data) {
 
 GLuint gen_faces(int components, int faces, GLfloat *data) {
     GLuint buffer = gen_buffer(
-        sizeof(GLfloat) * 6 * components * faces, data);
+                        sizeof(GLfloat) * 6 * components * faces, data);
     free(data);
     return buffer;
 }
 
 void flip_image_vertical(
-    unsigned char *data, unsigned int width, unsigned int height)
-{
+    unsigned char *data, unsigned int width, unsigned int height) {
     unsigned int size = width * height * 4;
     unsigned int stride = sizeof(char) * width * 4;
     unsigned char *new_data = (unsigned char*)malloc(sizeof(unsigned char) * size);
@@ -73,7 +72,7 @@ void load_png_texture(const char *file_name) {
     }
     flip_image_vertical(data, width, height);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-        GL_UNSIGNED_BYTE, data);
+                 GL_UNSIGNED_BYTE, data);
     free(data);
 }
 
@@ -87,12 +86,12 @@ void load_png_texture_from_buffer(const char *in, int size) {
     }
     flip_image_vertical(data, width, height);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-        GL_UNSIGNED_BYTE, data);
+                 GL_UNSIGNED_BYTE, data);
     free(data);
 }
 
 int file_exist(const char *filename) {
-  struct stat st;
-  int result = stat(filename, &st);
-  return result == 0;
+    struct stat st;
+    int result = stat(filename, &st);
+    return result == 0;
 }

@@ -1,11 +1,11 @@
 
 #include <nanogui/nanogui.h>
 #if defined(WIN32)
-#define _WINSOCKAPI_
-#include <windows.h>
-#include <winsock2.h>
+    #define _WINSOCKAPI_
+    #include <windows.h>
+    #include <winsock2.h>
 #else
-#include <arpa/inet.h>
+    #include <arpa/inet.h>
 #endif
 #include <nanogui/glutil.h>
 #include <iostream>
@@ -143,8 +143,9 @@ public:
     }
 
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
-        if (Screen::keyboardEvent(key, scancode, action, modifiers))
+        if (Screen::keyboardEvent(key, scancode, action, modifiers)) {
             return true;
+        }
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             if(hud.get_interactive()) {
                 close_hud();
@@ -159,13 +160,13 @@ public:
                 hide_menu();
             }*/
         } else if (key == KONSTRUCTS_KEY_FLY
-                && action == GLFW_PRESS
-                && debug_mode) {
+                   && action == GLFW_PRESS
+                   && debug_mode) {
             player.fly();
         } else if(key == KONSTRUCTS_KEY_INVENTORY && action == GLFW_PRESS) {
             if(hud.get_interactive()) {
                 close_hud();
-            } else if (client.is_connected()){
+            } else if (client.is_connected()) {
                 if(looking_at) {
                     auto &l = *looking_at;
                     uint8_t direction = direction_from_vector(l.first.position, l.second.position);
@@ -205,8 +206,9 @@ public:
             faces = chunk_shader.render(player, mSize.x(), mSize.y(),
                                         daylight(), time_of_day(), radius,
                                         view_distance, player_chunk);
-            if(faces > max_faces)
+            if(faces > max_faces) {
                 max_faces = faces;
+            }
             player_shader->render(player, mSize.x(), mSize.y(),
                                   daylight(), time_of_day(), view_distance);
             if(looking_at && !hud.get_interactive() && !menu_state) {
@@ -214,13 +216,14 @@ public:
                                         looking_at->second.position, view_distance);
             }
             glClear(GL_DEPTH_BUFFER_BIT);
-            if(!hud.get_interactive() && !menu_state)
+            if(!hud.get_interactive() && !menu_state) {
                 crosshair_shader.render(mSize.x(), mSize.y());
+            }
             double mx, my;
             glfwGetCursorPos(mGLFWWindow, &mx, &my);
             hud_shader.render(mSize.x(), mSize.y(), mx, my, hud, blocks);
             update_radius();
-        } else if(!menu_state){
+        } else if(!menu_state) {
             show_menu(client.get_error_message());
         }
     }
@@ -245,9 +248,9 @@ private:
             view_distance = view_distance - (float)CHUNK_SIZE * 0.2f * ((60.0f - (float)frame_fps) / 60.0f);
             return true;
         } else if(frame_fps >= 60.0
-                && radius < max_radius
-                && model_factory.waiting() == 0
-                && radius <= client.get_loaded_radius()) {
+                  && radius < max_radius
+                  && model_factory.waiting() == 0
+                  && radius <= client.get_loaded_radius()) {
             view_distance = view_distance + 0.05;
             return true;
         } else {
@@ -264,15 +267,17 @@ private:
 
         if(frame % 6 == 0) {
             double frame_fps = 1.15 / frame_time;
-            cout << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " << faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
+            cout << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " <<
+                 faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
             cout << "Chunks: " << world.size() << " models: " << chunk_shader.size() << endl;
-            cout << "Model factory, waiting: " << model_factory.waiting() << " created: " << model_factory.total_created() << " empty: " << model_factory.total_empty() << " total: " <<  model_factory.total() << endl;
+            cout << "Model factory, waiting: " << model_factory.waiting() << " created: " << model_factory.total_created() <<
+                 " empty: " << model_factory.total_empty() << " total: " <<  model_factory.total() << endl;
         }
     }
 
     void handle_mouse() {
         int exclusive =
-             glfwGetInputMode(mGLFWWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+            glfwGetInputMode(mGLFWWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
         if (exclusive && (px || py)) {
             double mx, my;
             glfwGetCursorPos(mGLFWWindow, &mx, &my);
@@ -300,7 +305,8 @@ private:
                         if(selected) {
                             BlockData block = { selected->type, selected->health,
                                                 DIRECTION_UP,
-                                               ROTATION_IDENTITY };
+                                                ROTATION_IDENTITY
+                                              };
                             if(blocks.is_orientable[block.type]) {
                                 block.direction = direction;
                                 block.rotation = rotation;
@@ -319,9 +325,9 @@ private:
                                         direction, rotation);
                     }
                 } else if(glfwGetMouseButton(mGLFWWindow, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) {
-                        click_delay = MOUSE_CLICK_DELAY_IN_FRAMES;
-                        client.click_at(0, Vector3i::Zero(), translate_button(GLFW_MOUSE_BUTTON_3), hud.get_selection(),
-                                        0, 0);
+                    click_delay = MOUSE_CLICK_DELAY_IN_FRAMES;
+                    client.click_at(0, Vector3i::Zero(), translate_button(GLFW_MOUSE_BUTTON_3), hud.get_selection(),
+                                    0, 0);
                 }
             } else {
                 click_delay--;
@@ -361,8 +367,8 @@ private:
             sneak = true;
         }
         client.position(player.update_position(sz, sx, (float)dt, world,
-                                              blocks, near_distance, jump, sneak),
-                       player.rx(), player.ry());
+                                               blocks, near_distance, jump, sneak),
+                        player.rx(), player.ry());
         Vector3i new_chunk(chunked_vec(player.camera()));
         if(new_chunk != player_chunk) {
             player_chunk = new_chunk;
@@ -457,8 +463,9 @@ private:
         float x, y, z, rx, ry;
 
         if(sscanf(str.c_str(), ",%d,%f,%f,%f,%f,%f",
-                  &pid, &x, &y, &z, &rx, &ry) != 6)
+                  &pid, &x, &y, &z, &rx, &ry) != 6) {
             throw std::runtime_error(str);
+        }
         player = Player(pid, Vector3f(x, y, z), rx, ry);
         player_chunk = chunked_vec(player.camera());
         client.set_player_chunk(player_chunk);
@@ -470,8 +477,9 @@ private:
         int pid;
         float x, y, z, rx, ry;
         if(sscanf(str.c_str(), ",%d,%f,%f,%f,%f,%f",
-                  &pid, &x, &y, &z, &rx, &ry) != 6)
+                  &pid, &x, &y, &z, &rx, &ry) != 6) {
             throw std::runtime_error(str);
+        }
         player_shader->add(Player(pid, Vector3f(x, y, z), rx, ry));
     }
 
@@ -479,8 +487,9 @@ private:
         int pid;
 
         if(sscanf(str.c_str(), ",%d",
-                  &pid) != 1)
+                  &pid) != 1) {
             throw std::runtime_error(str);
+        }
         player_shader->remove(pid);
     }
 
@@ -490,8 +499,9 @@ private:
         char state[16];
         if(sscanf(str.c_str(), ",%d,%15[^,],%15[^,],%d,%d,%d,%d,%d,%d,%d,%d,%d",
                   &w, shape, state, &obstacle, &transparent, &left, &right,
-                  &top, &bottom, &front, &back, &orientable) != 12)
+                  &top, &bottom, &front, &back, &orientable) != 12) {
             throw std::runtime_error(str);
+        }
         blocks.is_plant[w] = strncmp(shape, "plant", 16) == 0;
         if(strncmp(state, "solid", 16) == 0) {
             blocks.state[w] = STATE_SOLID;
@@ -528,8 +538,9 @@ private:
     void handle_belt(const string &str) {
         uint32_t column, size, type, health;
         if(sscanf(str.c_str(), ",%u,%u,%u,%u",
-                  &column, &size, &type, &health) != 4)
+                  &column, &size, &type, &health) != 4) {
             throw std::runtime_error(str);
+        }
 
         if(size < 1) {
             hud.reset_belt(column);
@@ -541,8 +552,9 @@ private:
     void handle_inventory(const string &str) {
         uint32_t index, size, type, health;
         if(sscanf(str.c_str(), ",%u,%u,%u,%u",
-                  &index, &size, &type, &health) != 4)
+                  &index, &size, &type, &health) != 4) {
             throw std::runtime_error(str);
+        }
         uint32_t row = index / 17;
         uint32_t column = index % 17;
         Vector2i pos(column, row);
@@ -559,8 +571,9 @@ private:
     void handle_held_stack(const string &str) {
         uint32_t amount, type;
         if(sscanf(str.c_str(), ",%u,%u",
-                  &amount, &type) != 2)
+                  &amount, &type) != 2) {
             throw std::runtime_error(str);
+        }
         if(type == -1) {
             hud.reset_held();
         } else {
@@ -592,8 +605,7 @@ private:
         if (timer < 0.5) {
             float t = (timer - 0.25) * 100;
             return 1 / (1 + powf(2, -t));
-        }
-        else {
+        } else {
             float t = (timer - 0.85) * 100;
             return 1 - 1 / (1 + powf(2, -t));
         }
@@ -613,14 +625,14 @@ private:
         gui->addVariable("Server address", hostname);
         gui->addVariable("Username", username);
         gui->addVariable("Password", password);
-        gui->addButton("Connect", [&](){
-                if (username != "" &&
+        gui->addButton("Connect", [&]() {
+            if (username != "" &&
                     password != "" &&
                     hostname != "") {
-                    hide_menu();
-                    setup_connection();
-                }
-            });
+                hide_menu();
+                setup_connection();
+            }
+        });
 
         window->center();
         performLayout(mNVGContext);
@@ -703,7 +715,9 @@ int init_winsock() {
     return 0;
 }
 #else
-int init_winsock() { return 0; }
+int init_winsock() {
+    return 0;
+}
 #endif
 
 void print_usage() {
@@ -775,15 +789,15 @@ int main(int argc, char ** argv) {
     } catch (const std::runtime_error &e) {
         std::string error_msg = std::string("Caught a fatal error: ") + std::string(e.what());
         #if defined(WIN32)
-            MessageBoxA(nullptr, error_msg.c_str(), NULL, MB_ICONERROR | MB_OK);
+        MessageBoxA(nullptr, error_msg.c_str(), NULL, MB_ICONERROR | MB_OK);
         #else
-            std::cerr << error_msg << endl;
+        std::cerr << error_msg << endl;
         #endif
         return -1;
     }
 
-#ifdef WIN32
+    #ifdef WIN32
     WSACleanup();
-#endif
+    #endif
     return 0;
 }

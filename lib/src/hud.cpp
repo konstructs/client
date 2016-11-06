@@ -58,7 +58,7 @@ namespace konstructs {
     std::unordered_map<Vector2i, ItemStack, matrix_hash<Vector2i>> Hud::stacks() const {
         if(!interactive) {
             std::unordered_map<Vector2i, ItemStack, matrix_hash<Vector2i>>
-                new_item_stacks(item_stacks);
+                    new_item_stacks(item_stacks);
             for(int i = 0; i < belt_size; i++) {
                 auto stack = belt[i];
                 Vector2i pos((columns - belt_size) / 2 + i, 0);
@@ -82,8 +82,12 @@ namespace konstructs {
         return belt[selection];
     }
     int Hud::scroll(int direction) {
-        if (selection <= 0 && direction > 0) return selection;
-        if (selection >= (belt_size - 1) && direction < 0) return selection;
+        if (selection <= 0 && direction > 0) {
+            return selection;
+        }
+        if (selection >= (belt_size - 1) && direction < 0) {
+            return selection;
+        }
         selection -= direction;
         return selection;
     }

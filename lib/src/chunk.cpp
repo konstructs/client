@@ -13,7 +13,8 @@ namespace konstructs {
     ChunkData VACUUM_CHUNK(VACUUM_TYPE);
 
 
-    std::shared_ptr<BlockData> read_chunk_data(uint8_t *buffer, std::unordered_map<uint16_t, std::shared_ptr<BlockData>> &cached_data) {
+    std::shared_ptr<BlockData> read_chunk_data(uint8_t *buffer,
+            std::unordered_map<uint16_t, std::shared_ptr<BlockData>> &cached_data) {
         BlockData *blocks = new BlockData[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
         uint16_t chunk_type = buffer[0] + (buffer[1] << 8);
         bool use_cached = true;
@@ -27,8 +28,9 @@ namespace konstructs {
             blocks[i].g = (buffer[i * BLOCK_SIZE + 5] & 0xF);
             blocks[i].b = (buffer[i * BLOCK_SIZE + 5] & 0xF0) >> 4;
             blocks[i].light = (buffer[i * BLOCK_SIZE + 6] & 0xF);
-            if(blocks[i].type != chunk_type || blocks[i].light > 0 || blocks[i].ambient < AMBIENT_LIGHT_FULL)
+            if(blocks[i].type != chunk_type || blocks[i].light > 0 || blocks[i].ambient < AMBIENT_LIGHT_FULL) {
                 use_cached = false;
+            }
         }
         if(use_cached) {
             try {
@@ -108,7 +110,7 @@ namespace konstructs {
 
         // TODO: Looking for a block in the wrong chunk is a bit weird, but hit code does it
         if(lx < CHUNK_SIZE && ly < CHUNK_SIZE && lz < CHUNK_SIZE &&
-           lx >= 0 && ly >= 0 && lz >= 0) {
+                lx >= 0 && ly >= 0 && lz >= 0) {
             int i = lx+ly*CHUNK_SIZE+lz*CHUNK_SIZE*CHUNK_SIZE;
             return blocks.get()[i];
         } else {
@@ -138,9 +140,9 @@ namespace konstructs {
      * vector.
      */
     optional<pair<Block, Block>> ChunkData::get(const Vector3f &camera_position,
-                                                const Vector3f &camera_direction,
-                                                const float max_distance,
-                                                const BlockTypeInfo &blocks) const {
+                              const Vector3f &camera_direction,
+                              const float max_distance,
+    const BlockTypeInfo &blocks) const {
         int m = 4;
         Vector3f pos = camera_position;
         Vector3i blockPos(0,0,0);
@@ -150,7 +152,7 @@ namespace konstructs {
                 BlockData data = get(nBlockPos);
                 if (blocks.is_obstacle[data.type] || blocks.is_plant[data.type]) {
                     return optional<pair<Block, Block>>(pair<Block, Block>(Block(blockPos, data),
-                                                                           Block(nBlockPos, data)));
+                                                        Block(nBlockPos, data)));
                 }
                 blockPos = nBlockPos;
             }

@@ -38,40 +38,40 @@ namespace konstructs {
     SelectionShader::SelectionShader(const float _fov,
                                      const float _near_distance, const float scale) :
         ShaderProgram(
-        "chunk",
-        "#version 330\n"
-        "uniform mat4 matrix;\n"
-        "uniform mat4 translation;\n"
-        "in vec4 position;\n"
-        "void main() {\n"
-        "    vec4 global_position = translation * position;\n"
-        "    gl_Position = matrix * global_position;\n"
-        "}\n",
-        "#version 330\n"
-        "out vec4 frag_color;\n"
-        "void main() {\n"
-        "    frag_color = vec4(0.1, 0.1, 0.1, 1.0);\n"
-        "}\n",
-        GL_LINES),
+            "chunk",
+            "#version 330\n"
+            "uniform mat4 matrix;\n"
+            "uniform mat4 translation;\n"
+            "in vec4 position;\n"
+            "void main() {\n"
+            "    vec4 global_position = translation * position;\n"
+            "    gl_Position = matrix * global_position;\n"
+            "}\n",
+            "#version 330\n"
+            "out vec4 frag_color;\n"
+            "void main() {\n"
+            "    frag_color = vec4(0.1, 0.1, 0.1, 1.0);\n"
+            "}\n",
+            GL_LINES),
         position_attr(attributeId("position")),
         matrix(uniformId("matrix")),
         translation(uniformId("translation")),
         fov(_fov),
         near_distance(_near_distance),
-        model(position_attr, wireframe(scale))
-    {}
+        model(position_attr, wireframe(scale)) {
+    }
 
     void SelectionShader::render(const Player &p, const int width, const int height,
                                  const Vector3i &selected, const float view_distance) {
         bind([&](Context c) {
-                c.enable(GL_DEPTH_TEST);
-                float aspect_ratio = (float)width / (float)height;
-                const Matrix4f m = matrix::projection_perspective(fov, aspect_ratio, near_distance, view_distance) * p.view();
-                c.set(matrix, m);
-                c.set(translation, Affine3f(Translation3f(selected.cast<float>())).matrix());
-                c.draw(&model);
-                c.disable(GL_DEPTH_TEST);
-            });
+            c.enable(GL_DEPTH_TEST);
+            float aspect_ratio = (float)width / (float)height;
+            const Matrix4f m = matrix::projection_perspective(fov, aspect_ratio, near_distance, view_distance) * p.view();
+            c.set(matrix, m);
+            c.set(translation, Affine3f(Translation3f(selected.cast<float>())).matrix());
+            c.draw(&model);
+            c.disable(GL_DEPTH_TEST);
+        });
     }
 
 };

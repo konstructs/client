@@ -31,7 +31,7 @@ namespace konstructs {
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
         glEnableVertexAttribArray(data_attr);
         glVertexAttribIPointer(data_attr, 2, GL_UNSIGNED_INT,
-                              0, 0);
+                               0, 0);
     }
 
     void ChunkShader::add(const shared_ptr<ChunkModelResult> &data) {
@@ -78,45 +78,45 @@ namespace konstructs {
         int faces = 0;
         int visible = 0;
         bind([&](Context c) {
-                c.enable(GL_DEPTH_TEST);
-                c.enable(GL_CULL_FACE);
-                float aspect_ratio = (float)width / (float)height;
-                const Matrix4f m = matrix::projection_perspective(fov, aspect_ratio, near_distance, view_distance) * player.view();
-                c.set(matrix, m);
-                c.set(sampler, (int)block_texture);
-                c.set(sky_sampler, (int)sky_texture);
-                c.set(damage_sampler, (int)damage_texture);
-                c.set(fog_distance, view_distance);
-                float value = min(1.0f, current_daylight);
-                float v = value * 0.3 + 0.15;
-                c.set(ambient_color, Vector3f(v, v, v));
-                Vector3f ambient((float)sin(M_PI*current_daylight)/2 + v, (float)sin(M_PI*current_daylight)/4 + v, v);
-                c.set(ambient_light, ambient);
-                c.set(timer, current_timer);
-                c.set(camera, player.camera());
-                float planes[6][4];
-                matrix::ext_frustum_planes(planes, radius, m);
-                for(auto it = models.begin(); it != models.end();) {
-                    int distance = (it->second->position - player_chunk).norm();
-                    if (distance > radius + KEEP_EXTRA_CHUNKS) {
-                        it = models.erase(it);
-                    } else if(distance <= radius){
-                        auto pos = it->first;
-                        if(chunk_visible(planes, pos)) {
-                            const auto m = it->second;
-                            visible++;
-                            c.set(translation, m->translation);
-                            c.draw(m);
-                            faces += m->faces;
-                        }
-                        ++it;
-                    } else {
-                        ++it;
+            c.enable(GL_DEPTH_TEST);
+            c.enable(GL_CULL_FACE);
+            float aspect_ratio = (float)width / (float)height;
+            const Matrix4f m = matrix::projection_perspective(fov, aspect_ratio, near_distance, view_distance) * player.view();
+            c.set(matrix, m);
+            c.set(sampler, (int)block_texture);
+            c.set(sky_sampler, (int)sky_texture);
+            c.set(damage_sampler, (int)damage_texture);
+            c.set(fog_distance, view_distance);
+            float value = min(1.0f, current_daylight);
+            float v = value * 0.3 + 0.15;
+            c.set(ambient_color, Vector3f(v, v, v));
+            Vector3f ambient((float)sin(M_PI*current_daylight)/2 + v, (float)sin(M_PI*current_daylight)/4 + v, v);
+            c.set(ambient_light, ambient);
+            c.set(timer, current_timer);
+            c.set(camera, player.camera());
+            float planes[6][4];
+            matrix::ext_frustum_planes(planes, radius, m);
+            for(auto it = models.begin(); it != models.end();) {
+                int distance = (it->second->position - player_chunk).norm();
+                if (distance > radius + KEEP_EXTRA_CHUNKS) {
+                    it = models.erase(it);
+                } else if(distance <= radius) {
+                    auto pos = it->first;
+                    if(chunk_visible(planes, pos)) {
+                        const auto m = it->second;
+                        visible++;
+                        c.set(translation, m->translation);
+                        c.draw(m);
+                        faces += m->faces;
                     }
+                    ++it;
+                } else {
+                    ++it;
                 }
-                c.disable(GL_CULL_FACE);
-                c.disable(GL_DEPTH_TEST);
-            });
+            }
+            c.disable(GL_CULL_FACE);
+            c.disable(GL_DEPTH_TEST);
+        });
         return faces;
     }
 
@@ -146,8 +146,7 @@ namespace konstructs {
                     planes[i][3];
                 if (d < 0) {
                     out++;
-                }
-                else {
+                } else {
                     in++;
                 }
                 if (in && out) {
