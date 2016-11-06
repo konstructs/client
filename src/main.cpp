@@ -99,7 +99,7 @@ public:
         if (username.size() > 0 && password.size() > 0 && hostname.size() > 0) {
             setup_connection();
         } else {
-            show_menu(string("Connect to a server"));
+            show_menu(0, string("Connect to a server"));
         }
         blocks.is_plant[SOLID_TYPE] = 0;
         blocks.is_obstacle[SOLID_TYPE] = 1;
@@ -226,7 +226,7 @@ public:
             hud_shader.render(mSize.x(), mSize.y(), mx, my, hud, blocks);
             update_radius();
         } else if(!menu_state) {
-            show_menu(client.get_error_message());
+            show_menu(2, client.get_error_message());
         }
     }
 
@@ -614,7 +614,7 @@ private:
     }
 
 
-    void show_menu(string message) {
+    void show_menu(int state, string message) {
         using namespace nanogui;
 
         glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -623,7 +623,38 @@ private:
         FormHelper *gui = new FormHelper(this);
         window = gui->addWindow({0,0}, "Main Menu");
         gui->setFixedSize({125, 20});
-        gui->addGroup(message);
+
+        if (state == 1) {
+            // Popup message
+
+            auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Server connection", message);
+        } else if (state == 2) {
+            // Popup message with connect/cancel buttons.
+
+            auto dlg = new MessageDialog(this, MessageDialog::Type::Warning,
+                                         "Server connection", message,
+                                         "Reconnect", "Cancel", true);
+            dlg->setCallback([&](int result) {
+                if (result == 0) {
+                    window->dispose();
+                    menu_state = false;
+                    setup_connection();
+                }
+            });
+        }
+
+        #if defined(KONSTRUCTS_SINGLE_PLAYER)
+        gui->addGroup("Singleplayer game");
+        gui->addButton("Play", [&]() {
+            username = "singleplayer";
+            password = "singleplayer";
+            hostname = "localhost";
+            window->dispose();
+            menu_state = false;
+            setup_connection();
+        });
+        gui->addGroup("Multiplayer");
+        #endif
         gui->addVariable("Server address", hostname);
         gui->addVariable("Username", username);
         gui->addVariable("Password", password);
@@ -655,7 +686,7 @@ private:
             // the SYN.
             glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         } catch(const std::exception& ex) {
-            show_menu(client.get_error_message());
+            show_menu(1, client.get_error_message());
         }
     }
 
