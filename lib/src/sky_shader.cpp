@@ -34,25 +34,25 @@ namespace konstructs {
     SkyShader::SkyShader(const float _fov, const GLuint _sky_texture,
                          const float _near_distance) :
         ShaderProgram(
-        "sky",
-        "#version 330\n"
-        "uniform mat4 matrix;\n"
-        "in vec4 position;\n"
-        "in vec2 uv;\n"
-        "out vec2 fragment_uv;\n"
-        "void main() {\n"
-        "    gl_Position = matrix * position;\n"
-        "    fragment_uv = uv;\n"
-        "}\n",
-        "#version 330\n"
-        "uniform sampler2D sampler;\n"
-        "uniform float timer;\n"
-        "in vec2 fragment_uv;\n"
-        "out vec4 frag_color;\n"
-        "void main() {\n"
-        "    vec2 uv = vec2(timer, fragment_uv.t);\n"
-        "    frag_color = texture(sampler, uv);\n"
-        "}\n"),
+            "sky",
+            "#version 330\n"
+            "uniform mat4 matrix;\n"
+            "in vec4 position;\n"
+            "in vec2 uv;\n"
+            "out vec2 fragment_uv;\n"
+            "void main() {\n"
+            "    gl_Position = matrix * position;\n"
+            "    fragment_uv = uv;\n"
+            "}\n",
+            "#version 330\n"
+            "uniform sampler2D sampler;\n"
+            "uniform float timer;\n"
+            "in vec2 fragment_uv;\n"
+            "out vec4 frag_color;\n"
+            "void main() {\n"
+            "    vec2 uv = vec2(timer, fragment_uv.t);\n"
+            "    frag_color = texture(sampler, uv);\n"
+            "}\n"),
         position_attr(attributeId("position")),
         uv_attr(attributeId("uv")),
         matrix(uniformId("matrix")),
@@ -66,17 +66,17 @@ namespace konstructs {
     void SkyShader::render(const Player &p, const int width, const int height,
                            const float current_timer, const float view_distance) {
         bind([&](Context c) {
-                c.enable(GL_DEPTH_TEST);
-                c.enable(GL_CULL_FACE);
-                float aspect_ratio = (float)width / (float)height;
-                const Matrix4f m = matrix::projection_perspective(fov, aspect_ratio, near_distance, view_distance) * p.direction();
-                c.set(matrix, m);
-                c.set(sampler, (int)sky_texture);
-                c.set(timer, current_timer);
-                c.draw(&model);
-                c.disable(GL_CULL_FACE);
-                c.disable(GL_DEPTH_TEST);
-            });
+            c.enable(GL_DEPTH_TEST);
+            c.enable(GL_CULL_FACE);
+            float aspect_ratio = (float)width / (float)height;
+            const Matrix4f m = matrix::projection_perspective(fov, aspect_ratio, near_distance, view_distance) * p.direction();
+            c.set(matrix, m);
+            c.set(sampler, (int)sky_texture);
+            c.set(timer, current_timer);
+            c.draw(&model);
+            c.disable(GL_CULL_FACE);
+            c.disable(GL_DEPTH_TEST);
+        });
     }
 
 

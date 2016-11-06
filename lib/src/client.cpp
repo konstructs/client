@@ -47,9 +47,9 @@ namespace konstructs {
         struct hostent *host;
         struct sockaddr_in address;
         if ((host = gethostbyname(hostname.c_str())) == 0) {
-#ifdef _WIN32
+            #ifdef _WIN32
             std::cerr << "WSAGetLastError: " << WSAGetLastError() << std::endl;
-#endif
+            #endif
             SHOWERROR("gethostbyname");
             error_message = "Could not find server: " + hostname;
             throw std::runtime_error(error_message);
@@ -76,15 +76,15 @@ namespace konstructs {
         int length = 0;
         while(t < size) {
             if ((length = recv(sock, out_buf + t, size - t, 0)) <= 0) {
-#ifdef _WIN32
+                #ifdef _WIN32
                 if(WSAGetLastError() == WSAEINTR) {
                     continue;
                 }
-#else
+                #else
                 if(errno == EINTR) {
                     continue;
                 }
-#endif
+                #endif
                 SHOWERROR("recv");
                 throw std::runtime_error("Failed to receive");
             }
@@ -137,7 +137,7 @@ namespace konstructs {
                 std::cout<<"[Recv worker]: waiting for connection"<<std::endl;
                 // Wait for an open connection
                 std::unique_lock<std::mutex> ulock_connected(mutex_connected);
-                cv_connected.wait(ulock_connected, [&]{ return connected; });
+                cv_connected.wait(ulock_connected, [&] { return connected; });
                 ulock_connected.unlock();
                 std::cout<<"[Recv worker]: connection established, entering main loop"<<std::endl;
                 int size;
@@ -162,13 +162,13 @@ namespace konstructs {
                     // read 'size' bytes from the network
                     int r = recv_all(packet->buffer(), packet->size);
                     // move data over to packet_buffer
-                    if(packet->type == 'C')
+                    if(packet->type == 'C') {
                         process_chunk(packet.get());
-                    else if(packet->type == 'E')
+                    } else if(packet->type == 'E') {
                         process_error(packet.get());
-                    else if(packet->type == 'c')
+                    } else if(packet->type == 'c') {
                         process_chunk_updated(packet.get());
-                    else {
+                    } else {
                         std::lock_guard<std::mutex> lock_packets(packets_mutex);
                         packets.push(packet);
                     }
@@ -186,7 +186,9 @@ namespace konstructs {
         vector<shared_ptr<Packet>> head;
         std::lock_guard<std::mutex> lock_packets(packets_mutex);
         for(int i=0; i < max; i++) {
-            if(packets.empty()) break;
+            if(packets.empty()) {
+                break;
+            }
             head.push_back(packets.front());
             packets.pop();
         }
@@ -247,14 +249,14 @@ namespace konstructs {
                 std::cout<<"[Send worker]: waiting for connection"<<std::endl;
                 // Wait for an open connection
                 std::unique_lock<std::mutex> ulock_connected(mutex_connected);
-                cv_connected.wait(ulock_connected, [&]{ return connected; });
+                cv_connected.wait(ulock_connected, [&] { return connected; });
                 ulock_connected.unlock();
                 std::cout<<"[Send worker]: connection established, entering main loop"<<std::endl;
                 int size;
                 while (connected) {
                     // Wait for an open connection
                     std::unique_lock<std::mutex> ulock_send(mutex_send);
-                    cv_send.wait(ulock_send, [&]{ return send_queue.size() > 0; });
+                    cv_send.wait(ulock_send, [&] { return send_queue.size() > 0; });
                     auto str = send_queue.front();
                     send_queue.pop();
                     ulock_send.unlock();
@@ -293,7 +295,7 @@ namespace konstructs {
                           const uint8_t direction, const uint8_t rotation) {
         std::stringstream ss;
         ss << "M," << hit << "," << pos[0] << "," << pos[1] << "," << pos[2] <<
-            "," << button << "," << active << "," << (int)direction << "," << (int)rotation;
+           "," << button << "," << active << "," << (int)direction << "," << (int)rotation;
         send_string(ss.str());
     }
 
@@ -431,7 +433,7 @@ namespace konstructs {
             std::cout<<"[Chunk worker]: waiting for connection and user log in"<<std::endl;
             // Wait for an open connection
             std::unique_lock<std::mutex> ulock_connected(mutex_connected);
-            cv_connected.wait(ulock_connected, [&]{ return connected && logged_in; });
+            cv_connected.wait(ulock_connected, [&] { return connected && logged_in; });
             ulock_connected.unlock();
             std::cout<<"[Chunk worker]: connection established and user logged in, entering main loop"<<std::endl;
 

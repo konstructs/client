@@ -146,7 +146,7 @@ namespace konstructs {
     }
 
     optional<pair<Block, Block>> Player::looking_at(const World &world,
-                                                    const BlockTypeInfo &blocks) const {
+    const BlockTypeInfo &blocks) const {
         optional<pair<Block, Block>> block(nullopt);
         float best = 0;
         const Vector3f v = camera_direction();
@@ -182,7 +182,7 @@ namespace konstructs {
         if (mry < 0) {
             mry += (M_PI * 2);
         }
-        if (mry >= (M_PI * 2)){
+        if (mry >= (M_PI * 2)) {
             mry -= (M_PI * 2);
         }
     }

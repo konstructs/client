@@ -19,10 +19,10 @@ namespace konstructs {
 
             Matrix4f m;
             m <<
-                x_scale, 0.0, 0.0, 0.0,
-                0.0, y_scale, 0.0, 0.0,
-                0.0, 0.0, -((FAR_PLANE + NEAR_PLANE) / frustrum_length), -((2 * NEAR_PLANE * FAR_PLANE) / frustrum_length),
-                0.0, 0.0, -1.0, 0.0;
+              x_scale, 0.0, 0.0, 0.0,
+                       0.0, y_scale, 0.0, 0.0,
+                       0.0, 0.0, -((FAR_PLANE + NEAR_PLANE) / frustrum_length), -((2 * NEAR_PLANE * FAR_PLANE) / frustrum_length),
+                       0.0, 0.0, -1.0, 0.0;
             return m;
         }
 
@@ -43,10 +43,10 @@ namespace konstructs {
             Matrix4f m;
 
             m <<
-                temp / temp2, 0.0, (right + left) / temp2, 0.0,
-                0.0, temp / temp3, (top + bottom) / temp3, 0.0,
-                0.0, 0.0, (-zfar - znear) / temp4, (-temp * zfar) / temp4,
-                0.0, 0.0, -1.0, 0.0;
+              temp / temp2, 0.0, (right + left) / temp2, 0.0,
+                   0.0, temp / temp3, (top + bottom) / temp3, 0.0,
+                   0.0, 0.0, (-zfar - znear) / temp4, (-temp * zfar) / temp4,
+                   0.0, 0.0, -1.0, 0.0;
             return m;
         }
 

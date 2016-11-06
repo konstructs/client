@@ -3,8 +3,9 @@
 
 namespace konstructs {
     GLuint creater_shader(const GLint type, const std::string &shader) {
-        if (shader.empty())
+        if (shader.empty()) {
             throw std::invalid_argument( "Shader code must not be empty" );
+        }
         GLuint id = glCreateShader(type);
         const char *shader_const = shader.c_str();
         glShaderSource(id, 1, &shader_const, nullptr);
@@ -15,12 +16,13 @@ namespace konstructs {
 
         if (status != GL_TRUE) {
             char buffer[512];
-            if (type == GL_VERTEX_SHADER)
+            if (type == GL_VERTEX_SHADER) {
                 std::cerr << "Vertex shader:" << std::endl;
-            else if (type == GL_FRAGMENT_SHADER)
+            } else if (type == GL_FRAGMENT_SHADER) {
                 std::cerr << "Fragment shader:" << std::endl;
-            else if (type == GL_GEOMETRY_SHADER)
+            } else if (type == GL_GEOMETRY_SHADER) {
                 std::cerr << "Geometry shader:" << std::endl;
+            }
             std::cerr << shader << std::endl << std::endl;
             glGetShaderInfoLog(id, 512, nullptr, buffer);
             std::cerr << "Error: " << std::endl << buffer << std::endl;

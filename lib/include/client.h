@@ -33,7 +33,9 @@ namespace konstructs {
         }
         const char type;
         const size_t size;
-        char* buffer() { return mBuffer; }
+        char* buffer() {
+            return mBuffer;
+        }
         string to_string() {
             string str(mBuffer, size);
             return str;
@@ -48,8 +50,7 @@ namespace konstructs {
     };
 
     struct LessThanByScore {
-        bool operator()(const ChunkToFetch& lhs, const ChunkToFetch& rhs) const
-        {
+        bool operator()(const ChunkToFetch& lhs, const ChunkToFetch& rhs) const {
             return lhs.score > rhs.score;
         }
     };
@@ -58,7 +59,7 @@ namespace konstructs {
     public:
         Client();
         void open_connection(const string &nick, const string &hash,
-               const string &hostname, const int port = DEFAULT_PORT);
+                             const string &hostname, const int port = DEFAULT_PORT);
         void version(const int version, const string &nick, const string &hash);
         void position(const Vector3f position,
                       const float rx, const float ry);

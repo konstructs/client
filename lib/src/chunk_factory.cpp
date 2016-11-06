@@ -94,23 +94,29 @@ namespace konstructs {
         std::vector<ChunkModelData> adj;
         adj.reserve(7);
         adj.push_back(create_model_data(position, world));
-        if(world.find(position + BELOW) != world.end())
+        if(world.find(position + BELOW) != world.end()) {
             adj.push_back(create_model_data(position + BELOW, world));
-        if(world.find(position + ABOVE) != world.end())
+        }
+        if(world.find(position + ABOVE) != world.end()) {
             adj.push_back(create_model_data(position + ABOVE, world));
-        if(world.find(position + LEFT) != world.end())
+        }
+        if(world.find(position + LEFT) != world.end()) {
             adj.push_back(create_model_data(position + LEFT, world));
-        if(world.find(position + RIGHT) != world.end())
+        }
+        if(world.find(position + RIGHT) != world.end()) {
             adj.push_back(create_model_data(position + RIGHT, world));
-        if(world.find(position + FRONT) != world.end())
+        }
+        if(world.find(position + FRONT) != world.end()) {
             adj.push_back(create_model_data(position + FRONT, world));
-        if(world.find(position + BACK) != world.end())
+        }
+        if(world.find(position + BACK) != world.end()) {
             adj.push_back(create_model_data(position + BACK, world));
+        }
         return adj;
     }
 
     const ChunkData get_chunk(const Vector3i &position,
-                               const World &world) {
+                              const World &world) {
         auto chunk = world.chunk_opt(position);
 
         if(chunk) {
@@ -161,16 +167,17 @@ namespace konstructs {
     void ChunkModelFactory::worker() {
         while(1) {
             std::unique_lock<std::mutex> ulock(mutex);
-            chunks_condition.wait(ulock, [&]{return !chunks.empty();});
-            auto cmp = [&](const Vector3i &a, const Vector3i &b){
+            chunks_condition.wait(ulock, [&] {return !chunks.empty();});
+            auto cmp = [&](const Vector3i &a, const Vector3i &b) {
                 return (a - player_chunk).norm() < (b - player_chunk).norm();
             };
             auto it = std::min_element(chunks.begin(), chunks.end(), cmp);
             auto position = *it;
             chunks.erase(it);
             auto itr = model_data.find(position);
-            if(itr == model_data.end())
+            if(itr == model_data.end()) {
                 continue;
+            }
             auto data = itr->second;
             model_data.erase(itr);
             ulock.unlock();
@@ -195,9 +202,8 @@ namespace konstructs {
 #define XZ(x, z) ((x) * XZ_SIZE + (z))
 
     void occlusion(
-                   char neighbors[27], char shades[27],
-                   char ao[6][4])
-    {
+        char neighbors[27], char shades[27],
+        char ao[6][4]) {
         static const int lookup3[6][4][3] = {
             {{0, 1, 3}, {2, 1, 5}, {6, 3, 7}, {8, 5, 7}},
             {{18, 19, 21}, {20, 19, 23}, {24, 21, 25}, {26, 23, 25}},
@@ -236,7 +242,7 @@ namespace konstructs {
     }
 
     shared_ptr<ChunkModelResult> compute_chunk(const ChunkModelData &data,
-                                               const BlockTypeInfo &block_data) {
+            const BlockTypeInfo &block_data) {
         std::vector<BlockData> blocks(XZ_SIZE * XZ_SIZE * XZ_SIZE);
         std::vector<char> highest(XZ_SIZE * XZ_SIZE);
 
@@ -605,8 +611,7 @@ namespace konstructs {
                 }
                 make_plant(vertices + offset, min_ao,
                            ex, ey, ez, eb, block_data.blocks);
-            }
-            else {
+            } else {
                 int damage = (int)(8.0f - ((float)eb.health / (float)(MAX_HEALTH + 1)) * 8.0f);
                 make_cube2(vertices + offset, ao, faces, face_data,
                            ex, ey, ez, eb, damage, block_data.blocks);

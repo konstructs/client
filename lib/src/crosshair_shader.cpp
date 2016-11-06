@@ -25,19 +25,19 @@ namespace konstructs {
 
     void CrosshairShader::render(const int width, const int height) {
         bind([&](Context c) {
-                float p = 0.03;
-                MatrixXf segments(2, 4);
-                segments.col(0) <<  0, -p;
-                segments.col(1) <<  0,  p;
-                segments.col(2) << -p,  0;
-                segments.col(3) <<  p,  0;
-                EigenModel data(position, segments);
-                c.logic_op(GL_INVERT);
-                c.enable(GL_COLOR_LOGIC_OP);
-                c.set(projection, projection_2d(width, height));
-                c.set(color, Vector4f( 0.0, 0.0, 0.0, 1.0));
-                c.draw(data);
-                c.disable(GL_COLOR_LOGIC_OP);
-            });
+            float p = 0.03;
+            MatrixXf segments(2, 4);
+            segments.col(0) <<  0, -p;
+            segments.col(1) <<  0,  p;
+            segments.col(2) << -p,  0;
+            segments.col(3) <<  p,  0;
+            EigenModel data(position, segments);
+            c.logic_op(GL_INVERT);
+            c.enable(GL_COLOR_LOGIC_OP);
+            c.set(projection, projection_2d(width, height));
+            c.set(color, Vector4f( 0.0, 0.0, 0.0, 1.0));
+            c.draw(data);
+            c.disable(GL_COLOR_LOGIC_OP);
+        });
     }
 };

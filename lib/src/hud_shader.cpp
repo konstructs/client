@@ -61,10 +61,11 @@ namespace konstructs {
 
         verts = 0;
         for (const auto &pair: stacks) {
-            if(blocks.is_plant[pair.second.type])
+            if(blocks.is_plant[pair.second.type]) {
                 verts += 6;
-            else
+            } else {
                 verts += (6 * 6);
+            }
         }
 
         float *data = new float[verts * 10];
@@ -198,7 +199,7 @@ namespace konstructs {
         screen_area(0.6) {}
 
     optional<Vector2i> HudShader::clicked_at(const double x, const double y,
-                                             const int width, const int height) {
+            const int width, const int height) {
         // Convert to Open GL coordinates (-1 to 1) and inverted y
         double glx = (x / (double)width) * 2.0 - 1.0;
         double gly = (((double)height - y) / (double)height) * 2.0 - 1.0;
@@ -223,82 +224,82 @@ namespace konstructs {
                            const Hud &hud,
                            const BlockTypeInfo &blocks) {
         bind([&](Context c) {
-                float scale = 4.0f/(float)columns;
-                float xscale = (float)height / (float)width;
+            float scale = 4.0f/(float)columns;
+            float xscale = (float)height / (float)width;
 
-                c.blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            c.blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-                /* Set up for 17 x 14 HUD grid */
-                c.set(matrix, hud_translation_matrix(scale, xscale, screen_area));
-                c.set(offset, hud_offset_vector(xscale, screen_area));
+            /* Set up for 17 x 14 HUD grid */
+            c.set(matrix, hud_translation_matrix(scale, xscale, screen_area));
+            c.set(offset, hud_offset_vector(xscale, screen_area));
 
-                /* Use background texture*/
-                c.set(sampler, texture);
+            /* Use background texture*/
+            c.set(sampler, texture);
 
-                /* Generate and draw background model */
+            /* Generate and draw background model */
 
-                HudModel hm(hud.backgrounds(), position, normal, uv);
-                c.enable(GL_BLEND);
-                c.draw(hm);
-                c.disable(GL_BLEND);
+            HudModel hm(hud.backgrounds(), position, normal, uv);
+            c.enable(GL_BLEND);
+            c.draw(hm);
+            c.disable(GL_BLEND);
 
-                c.enable(GL_DEPTH_TEST);
-                c.enable(GL_CULL_FACE);
+            c.enable(GL_DEPTH_TEST);
+            c.enable(GL_CULL_FACE);
 
-                /* Use block texture */
+            /* Use block texture */
+            c.set(sampler, block_texture);
+            /* Generate and draw item stacks */
+            ItemStackModel ism(position, normal, uv, hud.stacks(), blocks);
+            c.draw(ism);
+
+            /* Check for held block*/
+            auto held = hud.held();
+            if(held && hud.get_interactive()) {
+
+                /* Calculate mouse position on screen as gl coordinates */
+                float x = (mouse_x / (float)width) * 2.0f - 1.0f;
+                float y = (((float)height - mouse_y) / (float)height) * 2.0f - 1.0f;
+
+                /* Set up for drawing on whole screen */
+                Matrix4f m = Matrix4f::Identity();
+                /* This scales items drawn so that they are kept "square" */
+                m(0) = xscale;
+                Vector4f v = Vector4f::Zero();
+                c.set(matrix, m);
+                c.set(offset, v);
+                /* Use block textures */
                 c.set(sampler, block_texture);
-                /* Generate and draw item stacks */
-                ItemStackModel ism(position, normal, uv, hud.stacks(), blocks);
-                c.draw(ism);
+                /* Generate a single block model */
+                BlockModel bm(position, normal, uv, held->type, x / xscale, y,
+                              scale * xscale * screen_area * 0.55, blocks);
+                glClear(GL_DEPTH_BUFFER_BIT);
+                c.draw(bm);
+            }
+            c.disable(GL_CULL_FACE);
+            c.disable(GL_DEPTH_TEST);
 
-                /* Check for held block*/
-                auto held = hud.held();
-                if(held && hud.get_interactive()) {
-
-                    /* Calculate mouse position on screen as gl coordinates */
-                    float x = (mouse_x / (float)width) * 2.0f - 1.0f;
-                    float y = (((float)height - mouse_y) / (float)height) * 2.0f - 1.0f;
-
-                    /* Set up for drawing on whole screen */
-                    Matrix4f m = Matrix4f::Identity();
-                    /* This scales items drawn so that they are kept "square" */
-                    m(0) = xscale;
-                    Vector4f v = Vector4f::Zero();
-                    c.set(matrix, m);
-                    c.set(offset, v);
-                    /* Use block textures */
-                    c.set(sampler, block_texture);
-                    /* Generate a single block model */
-                    BlockModel bm(position, normal, uv, held->type, x / xscale, y,
-                                  scale * xscale * screen_area * 0.55, blocks);
-                    glClear(GL_DEPTH_BUFFER_BIT);
-                    c.draw(bm);
-                }
-                c.disable(GL_CULL_FACE);
-                c.disable(GL_DEPTH_TEST);
-
-                /* Set up for 17 x 14 HUD grid */
-                c.set(matrix,  hud_translation_matrix(scale, xscale, screen_area));
-                c.set(offset, hud_offset_vector(xscale, screen_area));
+            /* Set up for 17 x 14 HUD grid */
+            c.set(matrix,  hud_translation_matrix(scale, xscale, screen_area));
+            c.set(offset, hud_offset_vector(xscale, screen_area));
 
 
-                /* Use health bar texture */
-                c.set(sampler, health_bar_texture);
+            /* Use health bar texture */
+            c.set(sampler, health_bar_texture);
 
-                /* Generate and draw health bars */
-                HealthBarModel hbm(hud.stacks(), position, normal, uv);
-                c.draw(hbm);
+            /* Generate and draw health bars */
+            HealthBarModel hbm(hud.stacks(), position, normal, uv);
+            c.draw(hbm);
 
-                /* Use font texture */
-                c.set(sampler, font_texture);
+            /* Use font texture */
+            c.set(sampler, font_texture);
 
-                /* Generate and draw item stack amounts */
-                AmountModel am(position, normal, uv, hud.stacks());
-                c.enable(GL_BLEND);
-                c.draw(am);
-                c.disable(GL_BLEND);
+            /* Generate and draw item stack amounts */
+            AmountModel am(position, normal, uv, hud.stacks());
+            c.enable(GL_BLEND);
+            c.draw(am);
+            c.disable(GL_BLEND);
 
-            });
+        });
     }
 
     Matrix4f hud_translation_matrix(const float scale, const float xscale,
@@ -450,7 +451,8 @@ namespace konstructs {
             std::string text = std::to_string(pair.second.amount);
             for (int index = 0; index < text.length(); index++) {
                 int offset = text.length() - index - 1;
-                make_character(d + i * 10 * 6, pair.first[0] - (float)offset*0.2 + 0.75f, pair.first[1] + 0.25f, 0.1, 0.2, text[index], 0.0);
+                make_character(d + i * 10 * 6, pair.first[0] - (float)offset*0.2 + 0.75f, pair.first[1] + 0.25f, 0.1, 0.2, text[index],
+                               0.0);
                 i++;
             }
         }
