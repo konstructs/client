@@ -265,7 +265,7 @@ private:
             client.set_radius(radius);
         }
 
-        if(frame % 6 == 0) {
+        if(debug_mode && frame % 6 == 0) {
             double frame_fps = 1.15 / frame_time;
             cout << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " <<
                  faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
