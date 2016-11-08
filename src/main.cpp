@@ -73,7 +73,7 @@ public:
         model_factory(blocks),
         radius(5),
         max_radius(20),
-        client(),
+        client(debug_mode),
         view_distance((float)radius*CHUNK_SIZE),
         fov(70.0f),
         near_distance(0.125f),
@@ -265,7 +265,7 @@ private:
             client.set_radius(radius);
         }
 
-        if(frame % 6 == 0) {
+        if(debug_mode && frame % 6 == 0) {
             double frame_fps = 1.15 / frame_time;
             cout << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " <<
                  faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;

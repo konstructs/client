@@ -57,7 +57,7 @@ namespace konstructs {
 
     class Client {
     public:
-        Client();
+        Client(bool debug_mode);
         void open_connection(const string &nick, const string &hash,
                              const string &hostname, const int port = DEFAULT_PORT);
         void version(const int version, const string &nick, const string &hash);
@@ -114,6 +114,7 @@ namespace konstructs {
         std::queue<shared_ptr<Packet>> packets;
         std::deque<ChunkData> chunks;
         bool connected;
+        bool debug_mode;
         bool logged_in;
         std::string error_message;
         char *inflation_buffer;
