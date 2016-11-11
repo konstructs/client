@@ -56,6 +56,8 @@ using std::pair;
 
 void print_usage();
 
+void glfw_error(int error_code, const char *error_string);
+
 class Konstructs: public nanogui::Screen {
 public:
     Konstructs(const string &hostname,
@@ -729,6 +731,11 @@ void print_usage() {
     exit(0);
 }
 
+void glfw_error(int error_code, const char *error_string) {
+    cout << "GLFW Error[" << error_code << "]: " << error_string << endl;
+}
+
+
 int main(int argc, char ** argv) {
     std::string hostname = "play.konstructs.org";
     std::string username = "";
@@ -777,6 +784,7 @@ int main(int argc, char ** argv) {
     }
 
     try {
+        glfwSetErrorCallback(glfw_error);
         nanogui::init();
 
         {
