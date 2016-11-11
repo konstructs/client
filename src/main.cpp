@@ -840,39 +840,39 @@ int main(int argc, char ** argv) {
         {
             app = new Konstructs(hostname, username, password, debug_mode, window);
             glfwSetCursorPosCallback(window,
-                                     [](GLFWwindow *, double x, double y) {
-                                         app->cursorPosCallbackEvent(x, y);
-                                     });
+            [](GLFWwindow *, double x, double y) {
+                app->cursorPosCallbackEvent(x, y);
+            });
 
             glfwSetMouseButtonCallback(window,
-                                       [](GLFWwindow *, int button, int action, int modifiers) {
-                                           app->mouseButtonCallbackEvent(button, action, modifiers);
-                                       });
+            [](GLFWwindow *, int button, int action, int modifiers) {
+                app->mouseButtonCallbackEvent(button, action, modifiers);
+            });
 
             glfwSetKeyCallback(window,
-                               [](GLFWwindow *, int key, int scancode, int action, int mods) {
-                                   app->keyCallbackEvent(key, scancode, action, mods);
-                               });
+            [](GLFWwindow *, int key, int scancode, int action, int mods) {
+                app->keyCallbackEvent(key, scancode, action, mods);
+            });
 
             glfwSetCharCallback(window,
-                                [](GLFWwindow *, unsigned int codepoint) {
-                                    app->charCallbackEvent(codepoint);
-                                });
+            [](GLFWwindow *, unsigned int codepoint) {
+                app->charCallbackEvent(codepoint);
+            });
 
             glfwSetDropCallback(window,
-                                [](GLFWwindow *, int count, const char **filenames) {
-                                    app->dropCallbackEvent(count, filenames);
-                                });
+            [](GLFWwindow *, int count, const char **filenames) {
+                app->dropCallbackEvent(count, filenames);
+            });
 
             glfwSetScrollCallback(window,
-                                  [](GLFWwindow *, double x, double y) {
-                                      app->scrollCallbackEvent(x, y);
-                                  });
+            [](GLFWwindow *, double x, double y) {
+                app->scrollCallbackEvent(x, y);
+            });
 
             glfwSetFramebufferSizeCallback(window,
-                                           [](GLFWwindow *, int width, int height) {
-                                               app->resizeCallbackEvent(width, height);
-                                           });
+            [](GLFWwindow *, int width, int height) {
+                app->resizeCallbackEvent(width, height);
+            });
 
             app->drawAll();
             app->setVisible(true);
