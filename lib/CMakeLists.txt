@@ -29,7 +29,7 @@ find_package(ZLIB REQUIRED)
 include_directories(
   ${ZLIB_INCLUDE_DIRS}
   ../dependencies/nanogui/ext/glfw/include
-  ../dependencies/nanogui/ext/glew/include
+  ../dependencies/nanogui/ext/glad/include
   ../dependencies/nanogui/ext/eigen
   ../dependencies/lodepng
   ../dependencies/optional-lite
