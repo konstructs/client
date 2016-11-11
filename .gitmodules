@@ -7,3 +7,6 @@
 [submodule "dependencies/tinyobjloader"]
 	path = dependencies/tinyobjloader
 	url = https://github.com/syoyo/tinyobjloader.git
+[submodule "dependencies/nanogui"]
+	path = dependencies/nanogui
+	url = https://github.com/wjakob/nanogui.git

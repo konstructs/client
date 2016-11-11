@@ -1,5 +1,21 @@
+#if defined(NANOGUI_GLAD)
+    #if defined(NANOGUI_SHARED) && !defined(GLAD_GLAPI_EXPORT)
+        #define GLAD_GLAPI_EXPORT
+    #endif
+
+    #include <glad/glad.h>
+#else
+    #if defined(__APPLE__)
+        #define GLFW_INCLUDE_GLCOREARB
+    #else
+        #define GL_GLEXT_PROTOTYPES
+    #endif
+#endif
+
+#include <GLFW/glfw3.h>
 
 #include <nanogui/nanogui.h>
+
 #if defined(WIN32)
     #define _WINSOCKAPI_
     #include <windows.h>
@@ -63,10 +79,8 @@ public:
     Konstructs(const string &hostname,
                const string &username,
                const string &password,
-               bool debug_mode) :
-        nanogui::Screen(Eigen::Vector2i(KONSTRUCTS_APP_WIDTH,
-                                        KONSTRUCTS_APP_HEIGHT),
-                        KONSTRUCTS_APP_TITLE),
+               bool debug_mode,
+               GLFWwindow* window) :
         hostname(hostname),
         username(username),
         password(password),
@@ -92,6 +106,12 @@ public:
         debug_mode(debug_mode),
         frame(0),
         click_delay(0) {
+        initialize(window, true);
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        glViewport(0, 0, width, height);
+        glfwSwapInterval(1);
+        glfwSwapBuffers(window);
 
         using namespace nanogui;
         performLayout(mNVGContext);
@@ -735,6 +755,7 @@ void glfw_error(int error_code, const char *error_string) {
     cout << "GLFW Error[" << error_code << "]: " << error_string << endl;
 }
 
+Konstructs *app;
 
 int main(int argc, char ** argv) {
     std::string hostname = "play.konstructs.org";
@@ -784,17 +805,91 @@ int main(int argc, char ** argv) {
     }
 
     try {
-        glfwSetErrorCallback(glfw_error);
-        nanogui::init();
 
+        glfwSetErrorCallback(glfw_error);
+
+        glfwInit();
+
+        glfwSetTime(0);
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        glfwWindowHint(GLFW_SAMPLES, 0);
+        glfwWindowHint(GLFW_RED_BITS, 8);
+        glfwWindowHint(GLFW_GREEN_BITS, 8);
+        glfwWindowHint(GLFW_BLUE_BITS, 8);
+        glfwWindowHint(GLFW_ALPHA_BITS, 8);
+        glfwWindowHint(GLFW_STENCIL_BITS, 8);
+        glfwWindowHint(GLFW_DEPTH_BITS, 24);
+        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+
+        // Create a GLFWwindow object
+        GLFWwindow* window = glfwCreateWindow(KONSTRUCTS_APP_WIDTH, KONSTRUCTS_APP_HEIGHT,
+                                              KONSTRUCTS_APP_TITLE, nullptr, nullptr);
+        if (window == nullptr) {
+            std::cout << "Failed to create GLFW window" << std::endl;
+            glfwTerminate();
+            return -1;
+        }
+        glfwMakeContextCurrent(window);
+        glClearColor(0.2f, 0.25f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
         {
-            nanogui::ref<Konstructs> app = new Konstructs(hostname, username, password, debug_mode);
+            app = new Konstructs(hostname, username, password, debug_mode, window);
+            glfwSetCursorPosCallback(window,
+                                     [](GLFWwindow *, double x, double y) {
+                                         app->cursorPosCallbackEvent(x, y);
+                                     });
+
+            glfwSetMouseButtonCallback(window,
+                                       [](GLFWwindow *, int button, int action, int modifiers) {
+                                           app->mouseButtonCallbackEvent(button, action, modifiers);
+                                       });
+
+            glfwSetKeyCallback(window,
+                               [](GLFWwindow *, int key, int scancode, int action, int mods) {
+                                   app->keyCallbackEvent(key, scancode, action, mods);
+                               });
+
+            glfwSetCharCallback(window,
+                                [](GLFWwindow *, unsigned int codepoint) {
+                                    app->charCallbackEvent(codepoint);
+                                });
+
+            glfwSetDropCallback(window,
+                                [](GLFWwindow *, int count, const char **filenames) {
+                                    app->dropCallbackEvent(count, filenames);
+                                });
+
+            glfwSetScrollCallback(window,
+                                  [](GLFWwindow *, double x, double y) {
+                                      app->scrollCallbackEvent(x, y);
+                                  });
+
+            glfwSetFramebufferSizeCallback(window,
+                                           [](GLFWwindow *, int width, int height) {
+                                               app->resizeCallbackEvent(width, height);
+                                           });
+
             app->drawAll();
             app->setVisible(true);
-            nanogui::mainloop();
-        }
+            while (!glfwWindowShouldClose(window)) {
+                glfwPollEvents();
 
-        nanogui::shutdown();
+                glClearColor(0.2f, 0.25f, 0.3f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT);
+
+                app->drawContents();
+                app->drawWidgets();
+
+                glfwSwapBuffers(window);
+            }
+            delete app;
+        }
+        glfwTerminate();
     } catch (const std::runtime_error &e) {
         std::string error_msg = std::string("Caught a fatal error: ") + std::string(e.what());
         #if defined(WIN32)
