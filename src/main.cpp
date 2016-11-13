@@ -90,6 +90,7 @@ public:
         hud(17, 14, 9),
         menu_state(false),
         debug_mode(debug_mode),
+        debug_text_enabled(false),
         frame(0),
         click_delay(0) {
 
@@ -161,6 +162,8 @@ public:
             } else {
                 hide_menu();
             }*/
+        } else if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+            debug_text_enabled = !debug_text_enabled;
         } else if (key == KONSTRUCTS_KEY_FLY
                    && action == GLFW_PRESS
                    && debug_mode) {
@@ -241,10 +244,14 @@ private:
         glfwGetFramebufferSize(mGLFWWindow, &width, &height);
 
         ostringstream os;
-        os << "Connected to " << hostname << " with user " << username;
+        if (debug_text_enabled) {
+            os << "Connected to " << hostname << " with user " << username << std::endl;
+        }
+
+        glActiveTexture(GL_TEXTURE0);
         nvgFontBlur(mNVGContext, 0.8f);
         nvgFontSize(mNVGContext, 20.0f);
-        nvgTextBox(mNVGContext, 10, 20, width - 10, os.str().c_str(), '\0');
+        nvgTextBox(mNVGContext, 10, 20, width - 10, os.str().c_str(), NULL);
     }
 
     int translate_button(int button) {
@@ -734,6 +741,7 @@ private:
     double last_frame;
     bool menu_state;
     bool debug_mode;
+    bool debug_text_enabled;
     nanogui::Window *window;
     uint32_t frame;
     uint32_t faces;
