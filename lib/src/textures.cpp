@@ -102,6 +102,8 @@ namespace konstructs {
         texture_path("health_bar.png", txtpth, KONSTRUCTS_PATH_SIZE);
         load_png_texture(txtpth);
 
+        // Set Active texture to GL_TEXTURE0, nanogui will use the active texture
+        glActiveTexture(GL_TEXTURE0);
     }
 
     tinyobj::shape_t load_player() {

@@ -225,12 +225,27 @@ public:
             glfwGetCursorPos(mGLFWWindow, &mx, &my);
             hud_shader.render(mSize.x(), mSize.y(), mx, my, hud, blocks);
             update_radius();
+            print_top_text();
         } else if(!menu_state) {
             show_menu(2, client.get_error_message());
         }
     }
 
 private:
+
+    /** This function uses nanovg to print text on top of the screen. This is
+     *  used for both the debug screen and messages sent from the server.
+     */
+    void print_top_text() {
+        int width, height;
+        glfwGetFramebufferSize(mGLFWWindow, &width, &height);
+
+        ostringstream os;
+        os << "Connected to " << hostname << " with user " << username;
+        nvgFontBlur(mNVGContext, 0.8f);
+        nvgFontSize(mNVGContext, 20.0f);
+        nvgTextBox(mNVGContext, 10, 20, width - 10, os.str().c_str(), '\0');
+    }
 
     int translate_button(int button) {
         switch(button) {
