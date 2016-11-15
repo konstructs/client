@@ -9,6 +9,7 @@
 #endif
 #include <nanogui/glutil.h>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <memory>
 #include <utility>
@@ -245,7 +246,16 @@ private:
 
         ostringstream os;
         if (debug_text_enabled) {
-            os << "Connected to " << hostname << " with user " << username << std::endl;
+            double frame_fps = 1.15 / frame_time;
+            os << std::fixed << std::setprecision(2);
+            os << "Server: " << hostname << " user: " << username << " x: " << player.position(0) << " y: " << player.position(
+                   1) << " z: " << player.position(2) << std::endl;
+            os << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " <<
+               faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
+            os << "Chunks: " << world.size() << " models: " << chunk_shader.size() << endl;
+            os << "Model factory, waiting: " << model_factory.waiting() << " created: " << model_factory.total_created() <<
+               " empty: " << model_factory.total_empty() << " total: " <<  model_factory.total() << endl;
+
         }
 
         glActiveTexture(GL_TEXTURE0);
@@ -287,15 +297,6 @@ private:
             int new_radius = (int)(view_distance / (float)CHUNK_SIZE) + 1;
             radius = new_radius;
             client.set_radius(radius);
-        }
-
-        if(debug_mode && frame % 6 == 0) {
-            double frame_fps = 1.15 / frame_time;
-            cout << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " <<
-                 faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
-            cout << "Chunks: " << world.size() << " models: " << chunk_shader.size() << endl;
-            cout << "Model factory, waiting: " << model_factory.waiting() << " created: " << model_factory.total_created() <<
-                 " empty: " << model_factory.total_empty() << " total: " <<  model_factory.total() << endl;
         }
     }
 
