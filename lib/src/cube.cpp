@@ -229,8 +229,8 @@ void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], BlockData face_da
                 // Rotation LEFT
                 {{0, 1}, {1, 1}, {0, 0}, {1, 0}},
                 {{1, 1}, {0, 1}, {1, 0}, {0, 0}},
-                {{1, 1}, {0, 1}, {1, 0}, {0, 0}},
-                {{1, 0}, {0, 0}, {1, 1}, {0, 1}},
+                {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+                {{0, 1}, {1, 1}, {0, 0}, {1, 0}},
                 {{0, 1}, {0, 0}, {1, 1}, {1, 0}},
                 {{1, 1}, {1, 0}, {0, 1}, {0, 0}}
             },
@@ -238,8 +238,8 @@ void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], BlockData face_da
                 // Rotation RIGHT
                 {{0, 1}, {1, 1}, {0, 0}, {1, 0}},
                 {{1, 1}, {0, 1}, {1, 0}, {0, 0}},
-                {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
-                {{0, 1}, {1, 1}, {0, 0}, {1, 0}},
+                {{1, 1}, {0, 1}, {1, 0}, {0, 0}},
+                {{1, 0}, {0, 0}, {1, 1}, {0, 1}},
                 {{0, 1}, {0, 0}, {1, 1}, {1, 0}},
                 {{1, 1}, {1, 0}, {0, 1}, {0, 0}}
             },
@@ -429,8 +429,8 @@ void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], BlockData face_da
         {
             // Direction DOWN
             {1, 0, 3, 2, 4, 5}, // Rotation IDENTITY (none)
-            {5, 4, 3, 2, 1, 0}, // Rotation LEFT
-            {4, 5, 3, 2, 0, 1}, // Rotation RIGHT
+            {4, 5, 3, 2, 0, 1}, // Rotation LEFT
+            {5, 4, 3, 2, 1, 0}, // Rotation RIGHT
             {0, 1, 3, 2, 5, 4}  // Rotation HALF (180 degree)
         },
         {
