@@ -241,6 +241,39 @@ namespace konstructs {
         return is_transparent[neighbour] || (self != neighbour && state[neighbour] == STATE_LIQUID);
     }
 
+    RGBAmbient calculateRGBAmbient(std::vector<BlockData> &blocks, int x, int y, int z,
+                                   const char *is_transparent) {
+
+        int total = 0;
+        RGBAmbient rgba = {0,0,0,0,0};
+        for(int dx = 0; dx < 2; dx++) {
+            for(int dy = 0; dy < 2; dy++) {
+                for(int dz = 0; dz < 2; dz++) {
+                    BlockData b = blocks[XYZ(x - dx, y - dy, z - dz)];
+                    if(is_transparent[b.type]) {
+                        total++;
+                        rgba.r += b.r;
+                        rgba.g += b.g;
+                        rgba.b += b.b;
+                        rgba.light += b.light;
+                        rgba.ambient += b.ambient;
+                    }
+                }
+            }
+        }
+
+        if(total > 1) { // Avoid division by zero
+            rgba.r /= total;
+            rgba.g /= total;
+            rgba.b /= total;
+            rgba.light /= total;
+            rgba.ambient /= total;
+            return rgba;
+        } else {
+            return rgba;
+        }
+    }
+
     shared_ptr<ChunkModelResult> compute_chunk(const ChunkModelData &data,
             const BlockTypeInfo &block_data) {
         std::vector<BlockData> blocks(XZ_SIZE * XZ_SIZE * XZ_SIZE);
@@ -573,12 +606,22 @@ namespace konstructs {
             uint8_t back = face_visible(eb.type, back_data.type, is_transparent, state);
 
             uint8_t faces[6] = {left, right, top, bottom, front, back};
-            BlockData face_data[6] = {left_data, right_data, top_data, bottom_data, front_data, back_data};
 
             int total = left + right + top + bottom + front + back;
             if (total == 0) {
                 continue;
             }
+
+            RGBAmbient rgb_ambient[8] = {
+                calculateRGBAmbient(blocks, x, y, z, is_transparent),
+                calculateRGBAmbient(blocks, x, y, z + 1, is_transparent),
+                calculateRGBAmbient(blocks, x, y + 1, z, is_transparent),
+                calculateRGBAmbient(blocks, x + 1, y, z, is_transparent),
+                calculateRGBAmbient(blocks, x + 1, y + 1, z, is_transparent),
+                calculateRGBAmbient(blocks, x, y + 1, z + 1, is_transparent),
+                calculateRGBAmbient(blocks, x + 1, y, z + 1, is_transparent),
+                calculateRGBAmbient(blocks, x + 1, y + 1, z + 1, is_transparent)
+            };
             char neighbors[27] = {0};
             char shades[27] = {0};
             int index = 0;
@@ -613,7 +656,7 @@ namespace konstructs {
                            ex, ey, ez, eb, block_data.blocks);
             } else {
                 int damage = (int)(8.0f - ((float)eb.health / (float)(MAX_HEALTH + 1)) * 8.0f);
-                make_cube2(vertices + offset, ao, faces, face_data,
+                make_cube2(vertices + offset, ao, faces, rgb_ambient,
                            ex, ey, ez, eb, damage, block_data.blocks);
             }
             offset += total * 12;
