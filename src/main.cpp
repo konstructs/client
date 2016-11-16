@@ -9,6 +9,7 @@
 #endif
 #include <nanogui/glutil.h>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <memory>
 #include <utility>
@@ -90,6 +91,7 @@ public:
         hud(17, 14, 9),
         menu_state(false),
         debug_mode(debug_mode),
+        debug_text_enabled(false),
         frame(0),
         click_delay(0) {
 
@@ -161,6 +163,8 @@ public:
             } else {
                 hide_menu();
             }*/
+        } else if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+            debug_text_enabled = !debug_text_enabled;
         } else if (key == KONSTRUCTS_KEY_FLY
                    && action == GLFW_PRESS
                    && debug_mode) {
@@ -225,12 +229,40 @@ public:
             glfwGetCursorPos(mGLFWWindow, &mx, &my);
             hud_shader.render(mSize.x(), mSize.y(), mx, my, hud, blocks);
             update_radius();
+            print_top_text();
         } else if(!menu_state) {
             show_menu(2, client.get_error_message());
         }
     }
 
 private:
+
+    /** This function uses nanovg to print text on top of the screen. This is
+     *  used for both the debug screen and messages sent from the server.
+     */
+    void print_top_text() {
+        int width, height;
+        glfwGetFramebufferSize(mGLFWWindow, &width, &height);
+
+        ostringstream os;
+        if (debug_text_enabled) {
+            double frame_fps = 1.15 / frame_time;
+            os << std::fixed << std::setprecision(2);
+            os << "Server: " << hostname << " user: " << username << " x: " << player.position(0) << " y: " << player.position(
+                   1) << " z: " << player.position(2) << std::endl;
+            os << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " <<
+               faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
+            os << "Chunks: " << world.size() << " models: " << chunk_shader.size() << endl;
+            os << "Model factory, waiting: " << model_factory.waiting() << " created: " << model_factory.total_created() <<
+               " empty: " << model_factory.total_empty() << " total: " <<  model_factory.total() << endl;
+
+        }
+
+        glActiveTexture(GL_TEXTURE0);
+        nvgFontBlur(mNVGContext, 0.8f);
+        nvgFontSize(mNVGContext, 20.0f);
+        nvgTextBox(mNVGContext, 10, 20, width - 10, os.str().c_str(), NULL);
+    }
 
     int translate_button(int button) {
         switch(button) {
@@ -265,15 +297,6 @@ private:
             int new_radius = (int)(view_distance / (float)CHUNK_SIZE) + 1;
             radius = new_radius;
             client.set_radius(radius);
-        }
-
-        if(debug_mode && frame % 6 == 0) {
-            double frame_fps = 1.15 / frame_time;
-            cout << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " <<
-                 faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
-            cout << "Chunks: " << world.size() << " models: " << chunk_shader.size() << endl;
-            cout << "Model factory, waiting: " << model_factory.waiting() << " created: " << model_factory.total_created() <<
-                 " empty: " << model_factory.total_empty() << " total: " <<  model_factory.total() << endl;
         }
     }
 
@@ -719,6 +742,7 @@ private:
     double last_frame;
     bool menu_state;
     bool debug_mode;
+    bool debug_text_enabled;
     nanogui::Window *window;
     uint32_t frame;
     uint32_t faces;
