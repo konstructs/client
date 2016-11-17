@@ -145,7 +145,7 @@ namespace konstructs {
     const BlockTypeInfo &blocks) const {
         int m = 4;
         Vector3f pos = camera_position;
-        Vector3i blockPos(0,0,0);
+        Vector3i blockPos(roundf(pos[0]), roundf(pos[1]), roundf(pos[2]));
         for (int i = 0; i < max_distance * m; i++) {
             const Vector3i nBlockPos(roundf(pos[0]), roundf(pos[1]), roundf(pos[2]));
             if (nBlockPos != blockPos) {
