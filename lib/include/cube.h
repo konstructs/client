@@ -19,7 +19,7 @@ void make_cube(
     float x, float y, float z, float n, int w, const int blocks[256][6]);
 
 void make_cube2(
-    GLuint *data, char ao[6][4], uint8_t faces[6], BlockData faces_data[6],
+    GLuint *data, char ao[6][4], uint8_t faces[6], RGBAmbient corner_data[8],
     int x, int y, int z, const BlockData block, int damage, const int blocks[256][6]);
 
 void make_rotated_cube(float *data, char ao[6][4],

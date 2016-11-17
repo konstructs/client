@@ -54,6 +54,14 @@ namespace konstructs {
         uint8_t light;
     };
 
+    struct RGBAmbient {
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t light;
+        uint8_t ambient;
+    };
+
     class Block {
     public:
         Block(const Vector3i position, const BlockData data);

@@ -154,7 +154,7 @@ void make_cube(
 #define OFF_B 22
 #define OFF_LIGHT 26
 
-void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], BlockData face_data[6],
+void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], RGBAmbient corner_data[8],
                 int x, int y, int z, const BlockData block, int damage, const int blocks[256][6]) {
     /*
      * For each corner of the cube, which vertex should be used (see vertex shader)
@@ -486,12 +486,13 @@ void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], BlockData face_da
         if (faces[i] == 0) {
             continue;
         }
-        BlockData face = face_data[i];
         int flip = ao[i][0] + ao[i][3] > ao[i][1] + ao[i][2];
         for (int v = 0; v < 6; v++) {
             int j = flip ? flipped[i][v] : indices[i][v];
             int damage_u = damage + (uvs[dir][rot][i][j][0] ? 1 : 0);
             int damage_v = uvs[dir][rot][i][j][1] ? 1 : 0;
+            int corner = corners[i][j];
+            RGBAmbient rgba = corner_data[corner];
             GLuint d1 = (i << OFF_NORMAL) + (corners[i][j] << OFF_VERTEX) +
                         (x << OFF_X) + (y << OFF_Y) + (z << OFF_Z) +
                         (ao[i][j] << OFF_AO) + (damage_u << OFF_DAMAGE_U) +
@@ -500,9 +501,9 @@ void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], BlockData face_da
             int du = (blocks[block.type][tex[dir][rot][i]] % 16) + (uvs[dir][rot][i][j][0] ? 1 : 0);
             int dv = (blocks[block.type][tex[dir][rot][i]] / 16) + (uvs[dir][rot][i][j][1] ? 1 : 0);
 
-            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (face.ambient << OFF_AL) +
-                        (face.r << OFF_R) + (face.g << OFF_G) +
-                        (face.b << OFF_B) + (face.light << OFF_LIGHT);
+            GLuint d2 = (du << OFF_DU) + (dv << OFF_DV) + (rgba.ambient << OFF_AL) +
+                        (rgba.r << OFF_R) + (rgba.g << OFF_G) +
+                        (rgba.b << OFF_B) + (rgba.light << OFF_LIGHT);
             *(d++) = d2;
         }
     }
