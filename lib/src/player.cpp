@@ -11,6 +11,10 @@ namespace konstructs {
     static float CAMERA_OFFSET = 0.5f;
     static Vector3f CAMERA_OFFSET_VECTOR = Vector3f(0, CAMERA_OFFSET, 0);
 
+    static bool block_is_obstacle(const optional<BlockData> &block, const BlockTypeInfo &blocks) {
+        return block && blocks.is_obstacle[(*block).type];
+    }
+
     Player::Player(const int id, const Vector3f position, const float rx,
                    const float ry):
         id(id), position(position), mrx(rx), mry(ry), flying(false), dy(0) {}
@@ -54,7 +58,7 @@ namespace konstructs {
             /* We may place on our feet under certain circumstances */
             if(f(1) == block(1)) {
                 /* Allow placing on our feet if the block above our head is not an obstacle*/
-                return !blocks.is_obstacle[world.get_block(Vector3i(f(0), f(1) + 2, f(2))).type];
+                return !block_is_obstacle(world.get_block(Vector3i(f(0), f(1) + 2, f(2))), blocks);
             } else {
                 /* We are never allowed to place on our head */
                 return false;
@@ -67,80 +71,85 @@ namespace konstructs {
                                      const World &world, const BlockTypeInfo &blocks,
                                      const float near_distance, const bool jump,
                                      const bool sneaking) {
-        float vx = 0, vy = 0, vz = 0;
-        if (!sz && !sx) { // Not mowing in X or Z
-            vx = 0;
-            vz = 0;
-        } else { // Moving in X or Z
+        optional<ChunkData> chunk_opt = world.chunk_by_block(position);
+
+        if(chunk_opt) { // Only update position if the chunk we are in is loaded
+            float vx = 0, vy = 0, vz = 0;
+            if (!sz && !sx) { // Not mowing in X or Z
+                vx = 0;
+                vz = 0;
+            } else { // Moving in X or Z
 
 
-            float strafe = atan2f(sz, sx);
+                float strafe = atan2f(sz, sx);
 
-            if (flying) {
-                float m = cosf(mrx);
-                float y = sinf(mrx);
-                if (sx) {
-                    if (!sz) {
-                        y = 0;
+                if (flying) {
+                    float m = cosf(mrx);
+                    float y = sinf(mrx);
+                    if (sx) {
+                        if (!sz) {
+                            y = 0;
+                        }
+                        m = 1;
                     }
-                    m = 1;
+                    if (sz < 0) {
+                        y = -y;
+                    }
+                    vx = cosf(mry + strafe) * m;
+                    vy = y;
+                    vz = sinf(mry + strafe) * m;
+                } else {
+                    vx = cosf(mry + strafe);
+                    vy = 0;
+                    vz = sinf(mry + strafe);
                 }
-                if (sz < 0) {
-                    y = -y;
-                }
-                vx = cosf(mry + strafe) * m;
-                vy = y;
-                vz = sinf(mry + strafe) * m;
-            } else {
-                vx = cosf(mry + strafe);
-                vy = 0;
-                vz = sinf(mry + strafe);
             }
-        }
 
-        if(jump) {
-            if(flying) {
-                // Jump in flight moves upward at constant speed
-                vy = 1;
-            } else if(dy == 0) {
-                // Jump when walking changes the acceleration upwards to 8
-                dy = 8;
-            } else {
-                // Get middle of block
-                Vector3i iPos((int)(position[0] + 0.5f), (int)(position[1]), (int)(position[2] + 0.5f));
-                ChunkData chunk = world.chunk_at(iPos);
-                if(blocks.state[chunk.get(iPos).type] == STATE_LIQUID) {
-                    dy = 5.5;
+            if(jump) {
+                if(flying) {
+                    // Jump in flight moves upward at constant speed
+                    vy = 1;
+                } else if(dy == 0) {
+                    // Jump when walking changes the acceleration upwards to 8
+                    dy = 8;
+                } else {
+                    // Get middle of block
+                    Vector3i iPos((int)(position[0] + 0.5f), (int)(position[1]), (int)(position[2] + 0.5f));
+                    auto chunk = world.chunk_by_block(iPos);
+
+                    if(chunk && blocks.state[chunk->get(iPos).type] == STATE_LIQUID) {
+                        dy = 5.5;
+                    }
                 }
             }
-        }
 
-        float speed = flying ? 20 : 5;
-        int estimate =
-            roundf(sqrtf(powf(vx * speed, 2) +
-                         powf(vy * speed + std::abs(dy) * 2, 2) +
-                         powf(vz * speed, 2)) * dt * 8);
-        int step = std::max(8, estimate);
-        float ut = dt / step;
-        vx = vx * ut * speed;
-        vy = vy * ut * speed;
-        vz = vz * ut * speed;
-        for (int i = 0; i < step; i++) {
-            if (flying) {
-                // When flying upwards acceleration is constant i.e. not falling
-                dy = 0;
-            } else {
-                // Calculate "gravity" by decreasing upwards acceleration
-                dy -= ut * 25;
-                dy = std::max(dy, -250.0f);
+            float speed = flying ? 20 : 5;
+            int estimate =
+                roundf(sqrtf(powf(vx * speed, 2) +
+                             powf(vy * speed + std::abs(dy) * 2, 2) +
+                             powf(vz * speed, 2)) * dt * 8);
+            int step = std::max(8, estimate);
+            float ut = dt / step;
+            vx = vx * ut * speed;
+            vy = vy * ut * speed;
+            vz = vz * ut * speed;
+            for (int i = 0; i < step; i++) {
+                if (flying) {
+                    // When flying upwards acceleration is constant i.e. not falling
+                    dy = 0;
+                } else {
+                    // Calculate "gravity" by decreasing upwards acceleration
+                    dy -= ut * 25;
+                    dy = std::max(dy, -250.0f);
+                }
+                position += Vector3f(vx, vy + dy * ut, vz);
+                if (collide(world, blocks, near_distance, sneaking)) {
+                    dy = 0;
+                }
             }
-            position += Vector3f(vx, vy + dy * ut, vz);
-            if (collide(world, blocks, near_distance, sneaking)) {
-                dy = 0;
+            if (position[1] < 0) {
+                position[1] = 2;
             }
-        }
-        if (position[1] < 0) {
-            position[1] = 2;
         }
         return position;
     }
@@ -219,44 +228,44 @@ namespace konstructs {
 
         try {
 
-            if (blocks.is_obstacle[world.get_block(feet()).type]) {
+            if (block_is_obstacle(world.get_block(feet()), blocks)) {
                 position[1] += 1.0f;
                 return 1;
             }
 
             if(sneaking) {
-                if (px < -pad && !blocks.is_obstacle[world.get_block(Vector3i(nx - 1, ny - 2, nz)).type]) {
+                if (px < -pad && !block_is_obstacle(world.get_block(Vector3i(nx - 1, ny - 2, nz)), blocks)) {
                     position[0] = nx - pad;
                 }
-                if (px > pad && !blocks.is_obstacle[world.get_block(Vector3i(nx + 1, ny - 2, nz)).type]) {
+                if (px > pad && !block_is_obstacle(world.get_block(Vector3i(nx + 1, ny - 2, nz)), blocks)) {
                     position[0] = nx + pad;
                 }
-                if (pz < -pad && !blocks.is_obstacle[world.get_block(Vector3i(nx, ny - 2, nz - 1)).type]) {
+                if (pz < -pad && !block_is_obstacle(world.get_block(Vector3i(nx, ny - 2, nz - 1)), blocks)) {
                     position[2] = nz - pad;
                 }
-                if (pz > pad && !blocks.is_obstacle[world.get_block(Vector3i(nx, ny - 2, nz + 1)).type]) {
+                if (pz > pad && !block_is_obstacle(world.get_block(Vector3i(nx, ny - 2, nz + 1)), blocks)) {
                     position[2] = nz + pad;
                 }
             }
             for (int dy = 0; dy < height; dy++) {
-                if (px < -pad && blocks.is_obstacle[world.get_block(Vector3i(nx - 1, ny - dy, nz)).type]) {
+                if (px < -pad && block_is_obstacle(world.get_block(Vector3i(nx - 1, ny - dy, nz)), blocks)) {
                     position[0] = nx - pad;
                 }
-                if (px > pad && blocks.is_obstacle[world.get_block(Vector3i(nx + 1, ny - dy, nz)).type]) {
+                if (px > pad && block_is_obstacle(world.get_block(Vector3i(nx + 1, ny - dy, nz)), blocks)) {
                     position[0] = nx + pad;
                 }
-                if (py < -pad && blocks.is_obstacle[world.get_block(Vector3i(nx, ny - dy - 1, nz)).type]) {
+                if (py < -pad && block_is_obstacle(world.get_block(Vector3i(nx, ny - dy - 1, nz)), blocks)) {
                     position[1] = ny - pad;
                     result = 1;
                 }
-                if (py > (pad - CAMERA_OFFSET) && blocks.is_obstacle[world.get_block(Vector3i(nx, ny - dy + 1, nz)).type]) {
+                if (py > (pad - CAMERA_OFFSET) && block_is_obstacle(world.get_block(Vector3i(nx, ny - dy + 1, nz)), blocks)) {
                     position[1] = ny + pad - CAMERA_OFFSET;
                     result = 1;
                 }
-                if (pz < -pad && blocks.is_obstacle[world.get_block(Vector3i(nx, ny - dy, nz - 1)).type]) {
+                if (pz < -pad && block_is_obstacle(world.get_block(Vector3i(nx, ny - dy, nz - 1)), blocks)) {
                     position[2] = nz - pad;
                 }
-                if (pz > pad && blocks.is_obstacle[world.get_block(Vector3i(nx, ny - dy, nz + 1)).type]) {
+                if (pz > pad && block_is_obstacle(world.get_block(Vector3i(nx, ny - dy, nz + 1)), blocks)) {
                     position[2] = nz + pad;
                 }
             }

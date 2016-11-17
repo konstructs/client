@@ -117,7 +117,7 @@ namespace konstructs {
 
     const ChunkData get_chunk(const Vector3i &position,
                               const World &world) {
-        auto chunk = world.chunk_opt(position);
+        auto chunk = world.chunk(position);
 
         if(chunk) {
             return chunk.value();
