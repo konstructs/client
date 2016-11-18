@@ -336,10 +336,14 @@ private:
                                 block.direction = direction;
                                 block.rotation = rotation;
                             }
-                            ChunkData updated_chunk =
-                                world.chunk_at(l.first.position).set(l.first.position, block);
-                            world.insert(updated_chunk);
-                            model_factory.create_models({updated_chunk.position}, world);
+                            auto chunk_opt =
+                                world.chunk_by_block(l.first.position);
+                            if(chunk_opt) {
+                                ChunkData updated_chunk =
+                                    chunk_opt->set(l.first.position, block);
+                                world.insert(updated_chunk);
+                                model_factory.create_models({updated_chunk.position}, world);
+                            }
                         }
                         click_delay = MOUSE_CLICK_DELAY_IN_FRAMES;
                         client.click_at(1, l.first.position, translate_button(GLFW_MOUSE_BUTTON_2), hud.get_selection(),

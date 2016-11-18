@@ -15,9 +15,10 @@ namespace konstructs {
         int size() const;
         void delete_unused_chunks(const Vector3i player_chunk, const int radi);
         void insert(const ChunkData data);
-        const BlockData get_block(const Vector3i &block_pos) const;
-        const ChunkData chunk_at(const Vector3i &block_pos) const;
-        const optional<ChunkData> chunk_opt(const Vector3i &chunk_pos) const;
+        const optional<BlockData> get_block(const Vector3i &block_pos) const;
+        const optional<ChunkData> chunk_by_block(const Vector3f &block_pos) const;
+        const optional<ChunkData> chunk_by_block(const Vector3i &block_pos) const;
+        const optional<ChunkData> chunk(const Vector3i &chunk_pos) const;
         const std::vector<ChunkData> atAndAround(const Vector3i &pos) const;
         std::unordered_map<Vector3i, ChunkData, matrix_hash<Vector3i>>::const_iterator find(const Vector3i &pos) const;
         std::unordered_map<Vector3i, ChunkData, matrix_hash<Vector3i>>::const_iterator end() const;

@@ -25,20 +25,24 @@ namespace konstructs {
         chunks.insert({pos, data});
     }
 
-    const BlockData World::get_block(const Vector3i &block_pos) const {
-        return chunk_at(block_pos).get(block_pos);
-    }
-
-    const ChunkData World::chunk_at(const Vector3i &block_pos) const {
-        try {
-            return chunks.at(chunked_vec_int(block_pos));
-        } catch(std::out_of_range e) {
-            return VACUUM_CHUNK;
+    const optional<BlockData> World::get_block(const Vector3i &block_pos) const {
+        auto chunk = chunk_by_block(block_pos);
+        if(chunk) {
+            return (*chunk).get(block_pos);
+        } else {
+            return nullopt;
         }
-
     }
 
-    const optional<ChunkData> World::chunk_opt(const Vector3i &chunk_pos) const {
+    const optional<ChunkData> World::chunk_by_block(const Vector3f &block_pos) const {
+        return chunk(chunked_vec(block_pos));
+    }
+
+    const optional<ChunkData> World::chunk_by_block(const Vector3i &block_pos) const {
+        return chunk(chunked_vec_int(block_pos));
+    }
+
+    const optional<ChunkData> World::chunk(const Vector3i &chunk_pos) const {
         try {
             return chunks.at(chunk_pos);
         } catch(std::out_of_range e)  {
