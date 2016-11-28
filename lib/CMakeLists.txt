@@ -34,6 +34,7 @@ include_directories(
   ../dependencies/lodepng
   ../dependencies/optional-lite
   ../dependencies/tinyobjloader
+  ../dependencies/simpleini
   include
   )
 

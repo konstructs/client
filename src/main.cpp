@@ -32,6 +32,7 @@
 #include "client.h"
 #include "util.h"
 #include "cube.h"
+#include "settings.h"
 
 #define KONSTRUCTS_APP_TITLE "Konstructs"
 #define KONSTRUCTS_APP_WIDTH 854
@@ -805,10 +806,22 @@ void glfw_error(int error_code, const char *error_string) {
 
 
 int main(int argc, char ** argv) {
-    std::string hostname = "play.konstructs.org";
-    std::string username = "";
-    std::string password = "";
-    bool debug_mode = false;
+
+    char settings_path[255];
+    if(const char* env_home = std::getenv("HOME")) {
+        snprintf(settings_path, 255, "%s/%s", env_home, ".konstructs.conf");
+    } else {
+        snprintf(settings_path, 255, "%s/%s", "/tmp/", ".konstructs.conf");
+    }
+
+    Settings *conf = load_settings(settings_path);
+    std::cout << conf->get_conf_string("user", "username", "") << std::endl;
+
+    std::string hostname = conf->get_conf_string("server", "hostname", "play.konstructs.org");
+    std::string username = conf->get_conf_string("server", "username", "");
+    std::string password = conf->get_conf_string("server", "password", "");
+
+    bool debug_mode = conf->get_conf_boolean("client", "debug", false);
 
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
