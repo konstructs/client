@@ -32,6 +32,7 @@
 #include "client.h"
 #include "util.h"
 #include "cube.h"
+#include "settings.h"
 
 #define KONSTRUCTS_APP_TITLE "Konstructs"
 #define KONSTRUCTS_APP_WIDTH 854
@@ -61,22 +62,16 @@ void glfw_error(int error_code, const char *error_string);
 
 class Konstructs: public nanogui::Screen {
 public:
-    Konstructs(const string &hostname,
-               const string &username,
-               const string &password,
-               bool debug_mode) :
+    Konstructs(Settings settings) :
         nanogui::Screen(Eigen::Vector2i(KONSTRUCTS_APP_WIDTH,
                                         KONSTRUCTS_APP_HEIGHT),
                         KONSTRUCTS_APP_TITLE),
-        hostname(hostname),
-        username(username),
-        password(password),
         player(0, Vector3f(0.0f, 0.0f, 0.0f), 0.0f, 0.0f),
         px(0), py(0),
         model_factory(blocks),
         radius(5),
         max_radius(20),
-        client(debug_mode),
+        client(settings.client.debug),
         view_distance((float)radius*CHUNK_SIZE),
         fov(70.0f),
         near_distance(0.125f),
@@ -90,15 +85,16 @@ public:
         looking_at(nullopt),
         hud(17, 14, 9),
         menu_state(false),
-        debug_mode(debug_mode),
         debug_text_enabled(false),
         frame(0),
-        click_delay(0) {
+        click_delay(0),
+        settings(settings) {
 
         using namespace nanogui;
         performLayout(mNVGContext);
         glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        if (username.size() > 0 && password.size() > 0 && hostname.size() > 0) {
+        Settings::Server server = settings.server;
+        if (server.username.size() > 0 && server.password.size() > 0 && server.address.size() > 0) {
             setup_connection();
         } else {
             show_menu(0, string("Connect to a server"));
@@ -167,7 +163,7 @@ public:
             debug_text_enabled = !debug_text_enabled;
         } else if (key == KONSTRUCTS_KEY_FLY
                    && action == GLFW_PRESS
-                   && debug_mode) {
+                   && settings.client.debug) {
             player.fly();
         } else if(key == KONSTRUCTS_KEY_INVENTORY && action == GLFW_PRESS) {
             if(hud.get_interactive()) {
@@ -248,7 +244,7 @@ private:
         if (debug_text_enabled) {
             double frame_fps = 1.15 / frame_time;
             os << std::fixed << std::setprecision(2);
-            os << "Server: " << hostname << " user: " << username << " x: " << player.position(0) << " y: " << player.position(
+            os << "Server: " << settings.server.address << " user: " << settings.server.username << " x: " << player.position(0) << " y: " << player.position(
                    1) << " z: " << player.position(2) << std::endl;
             if(looking_at) {
                 auto l = *looking_at;
@@ -682,27 +678,28 @@ private:
         #if defined(KONSTRUCTS_SINGLE_PLAYER)
         gui->addGroup("Singleplayer game");
         gui->addButton("Play", [&]() {
-            username = "singleplayer";
-            password = "singleplayer";
-            hostname = "localhost";
+            settings.server.username = "singleplayer";
+            settings.server.password = "singleplayer";
+            settings.server.address = "localhost";
             window->dispose();
             menu_state = false;
             setup_connection();
         });
         gui->addGroup("Multiplayer");
         #endif
-        gui->addVariable("Server address", hostname);
-        gui->addVariable("Username", username);
-        gui->addVariable("Password", password);
+        gui->addVariable("Server address", settings.server.address);
+        gui->addVariable("Username", settings.server.username);
+        gui->addVariable("Password", settings.server.password);
         gui->addButton("Connect", [&]() {
-            if (username != "" &&
-                    password != "" &&
-                    hostname != "") {
+            if (settings.server.username != "" &&
+                    settings.server.password != "" &&
+                    settings.server.address != "") {
                 // Note: The mouse pointer is intentionally not locked here.
                 // See: setup_connection()
                 window->dispose();
                 menu_state = false;
                 setup_connection();
+                save_settings(settings);
             }
         });
 
@@ -713,7 +710,7 @@ private:
 
     void setup_connection() {
         try {
-            client.open_connection(username, password, hostname);
+            client.open_connection(settings.server.username, settings.server.password, settings.server.address);
             load_textures();
             client.set_connected(true);
 
@@ -726,9 +723,6 @@ private:
         }
     }
 
-    std::string hostname;
-    std::string username;
-    std::string password;
     BlockTypeInfo blocks;
     CrosshairShader crosshair_shader;
     int radius;
@@ -754,7 +748,6 @@ private:
     FPS fps;
     double last_frame;
     bool menu_state;
-    bool debug_mode;
     bool debug_text_enabled;
     nanogui::Window *window;
     uint32_t frame;
@@ -762,6 +755,7 @@ private:
     uint32_t max_faces;
     double frame_time;
     uint32_t click_delay;
+    Settings settings;
 };
 
 #ifdef WIN32
@@ -805,10 +799,10 @@ void glfw_error(int error_code, const char *error_string) {
 
 
 int main(int argc, char ** argv) {
-    std::string hostname = "play.konstructs.org";
-    std::string username = "";
-    std::string password = "";
-    bool debug_mode = false;
+
+    Settings settings;
+    load_settings(settings);
+    save_settings(settings);
 
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
@@ -819,7 +813,7 @@ int main(int argc, char ** argv) {
                 if (!argv[i+1]) {
                     print_usage();
                 } else {
-                    hostname = argv[i+1];
+                    settings.server.address = argv[i+1];
                     ++i;
                 }
             }
@@ -827,7 +821,7 @@ int main(int argc, char ** argv) {
                 if (!argv[i+1]) {
                     print_usage();
                 } else {
-                    username = argv[i+1];
+                    settings.server.username = argv[i+1];
                     ++i;
                 }
             }
@@ -835,12 +829,12 @@ int main(int argc, char ** argv) {
                 if (!argv[i+1]) {
                     print_usage();
                 } else {
-                    password = argv[i+1];
+                    settings.server.password = argv[i+1];
                     ++i;
                 }
             }
             if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0) {
-                debug_mode = true;
+                settings.client.debug = true;
             }
         }
 
@@ -856,7 +850,7 @@ int main(int argc, char ** argv) {
         nanogui::init();
 
         {
-            nanogui::ref<Konstructs> app = new Konstructs(hostname, username, password, debug_mode);
+            nanogui::ref<Konstructs> app = new Konstructs(settings);
             app->drawAll();
             app->setVisible(true);
             nanogui::mainloop();
