@@ -8,7 +8,7 @@ namespace konstructs {
     using namespace Eigen;
     using nonstd::nullopt;
 
-    static float CAMERA_OFFSET = 1.3f;
+    static float CAMERA_OFFSET = 2.3f;
     static Vector3f CAMERA_OFFSET_VECTOR = Vector3f(0, CAMERA_OFFSET, 0);
 
     static bool block_is_obstacle(const optional<BlockData> &block, const BlockTypeInfo &blocks) {
@@ -111,7 +111,7 @@ namespace konstructs {
                     vy = 1;
                 } else if(dy == 0) {
                     // Jump when walking changes the acceleration upwards to 8
-                    dy = 8.0f *  CAMERA_OFFSET;
+                    dy = 5.0f *  CAMERA_OFFSET;
                 } else {
                     // Get middle of block
                     Vector3i iPos((int)(position[0] + 0.5f), (int)(position[1]), (int)(position[2] + 0.5f));
