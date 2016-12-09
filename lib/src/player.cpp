@@ -111,7 +111,7 @@ namespace konstructs {
                     vy = 1;
                 } else if(dy == 0) {
                     // Jump when walking changes the acceleration upwards to 8
-                    dy = 5.0f *  CAMERA_OFFSET;
+                    dy = 5.0f * CAMERA_OFFSET;
                 } else {
                     // Get middle of block
                     Vector3i iPos((int)(position[0] + 0.5f), (int)(position[1]), (int)(position[2] + 0.5f));
@@ -214,7 +214,7 @@ namespace konstructs {
         float x = position[0];
         float y = position[1];
         float z = position[2];
-        int height = 2;
+        int height = 4;
         int p = chunked(x);
         int q = chunked(z);
         int k = chunked(y);
@@ -225,42 +225,41 @@ namespace konstructs {
         float py = y - ny;
         float pz = z - nz;
         float pad = near_distance * 2;
-
         try {
 
             if (block_is_obstacle(world.get_block(feet()), blocks)) {
-                position[1] += 1.0f;
+                position[1] += (pad / 16.0f);
                 return 1;
             }
 
             if(sneaking) {
-                if (px < -pad && !block_is_obstacle(world.get_block(Vector3i(nx - 1, ny - 2, nz)), blocks)) {
+                if (px < -pad && !block_is_obstacle(world.get_block(Vector3i(nx - 1, ny - 4, nz)), blocks)) {
                     position[0] = nx - pad;
                 }
-                if (px > pad && !block_is_obstacle(world.get_block(Vector3i(nx + 1, ny - 2, nz)), blocks)) {
+                if (px > pad && !block_is_obstacle(world.get_block(Vector3i(nx + 1, ny - 4, nz)), blocks)) {
                     position[0] = nx + pad;
                 }
-                if (pz < -pad && !block_is_obstacle(world.get_block(Vector3i(nx, ny - 2, nz - 1)), blocks)) {
+                if (pz < -pad && !block_is_obstacle(world.get_block(Vector3i(nx, ny - 4, nz - 1)), blocks)) {
                     position[2] = nz - pad;
                 }
-                if (pz > pad && !block_is_obstacle(world.get_block(Vector3i(nx, ny - 2, nz + 1)), blocks)) {
+                if (pz > pad && !block_is_obstacle(world.get_block(Vector3i(nx, ny - 4, nz + 1)), blocks)) {
                     position[2] = nz + pad;
                 }
             }
-            for (int dy = 0; dy < height; dy++) {
+            if (py < -pad && block_is_obstacle(world.get_block(Vector3i(nx, ny - 2, nz)), blocks)) {
+                position[1] = ny - pad;
+                result = 1;
+            }
+            if (py > pad && block_is_obstacle(world.get_block(Vector3i(nx, ny + 2, nz)), blocks)) {
+                position[1] = ny + pad;
+                result = 1;
+            }
+            for (int dy = -2; dy < height - 3; dy++) {
                 if (px < -pad && block_is_obstacle(world.get_block(Vector3i(nx - 1, ny - dy, nz)), blocks)) {
                     position[0] = nx - pad;
                 }
                 if (px > pad && block_is_obstacle(world.get_block(Vector3i(nx + 1, ny - dy, nz)), blocks)) {
                     position[0] = nx + pad;
-                }
-                if (py < -pad && block_is_obstacle(world.get_block(Vector3i(nx, ny - dy - 1, nz)), blocks)) {
-                    position[1] = ny - pad;
-                    result = 1;
-                }
-                if (py > (pad - CAMERA_OFFSET) && block_is_obstacle(world.get_block(Vector3i(nx, ny - dy + 1, nz)), blocks)) {
-                    position[1] = ny + pad - CAMERA_OFFSET;
-                    result = 1;
                 }
                 if (pz < -pad && block_is_obstacle(world.get_block(Vector3i(nx, ny - dy, nz - 1)), blocks)) {
                     position[2] = nz - pad;
