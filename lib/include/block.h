@@ -31,6 +31,10 @@
 
 namespace konstructs {
 
+    extern const std::string direction_to_string[6];
+
+    extern const std::string rotation_to_string[4];
+
     using namespace Eigen;
 
     struct BlockTypeInfo {
