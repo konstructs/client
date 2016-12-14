@@ -250,6 +250,15 @@ private:
             os << std::fixed << std::setprecision(2);
             os << "Server: " << hostname << " user: " << username << " x: " << player.position(0) << " y: " << player.position(
                    1) << " z: " << player.position(2) << std::endl;
+            if(looking_at) {
+                auto l = *looking_at;
+                uint8_t direction = direction_from_vector(l.first.position, l.second.position);
+                uint8_t rotation = rotation_from_vector(direction, player.camera_direction());
+                os << "Pointing at x: " << l.second.position(0) << ", y: " << l.second.position(1) << ", z: " << l.second.position(2) <<
+                   ", dir: " << direction_to_string[direction] << ", rot: " << rotation_to_string[rotation] << std::endl;
+            } else {
+                os << "Pointing at nothing." << std::endl;
+            }
             os << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " <<
                faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
             os << "Chunks: " << world.size() << " models: " << chunk_shader.size() << endl;
