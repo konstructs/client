@@ -387,8 +387,8 @@ void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], RGBAmbient corner
                 {{1, 0}, {1, 1}, {0, 0}, {0, 1}},
                 {{1, 0}, {1, 1}, {0, 0}, {0, 1}},
                 {{0, 0}, {0, 1}, {1, 0}, {1, 1}},
-                {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
-                {{0, 1}, {1, 1}, {0, 0}, {1, 0}}
+                {{1, 1}, {0, 1}, {1, 0}, {0, 0}},
+                {{1, 0}, {0, 0}, {1, 1}, {0, 1}}
             },
             {
                 // Rotation RIGHT
@@ -396,8 +396,8 @@ void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], RGBAmbient corner
                 {{1, 0}, {1, 1}, {0, 0}, {0, 1}},
                 {{1, 0}, {1, 1}, {0, 0}, {0, 1}},
                 {{0, 0}, {0, 1}, {1, 0}, {1, 1}},
-                {{1, 1}, {0, 1}, {1, 0}, {0, 0}},
-                {{1, 0}, {0, 0}, {1, 1}, {0, 1}}
+                {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+                {{0, 1}, {1, 1}, {0, 0}, {1, 0}}
             },
             {
                 // Rotation HALF (180 degree)
@@ -457,8 +457,8 @@ void make_cube2(GLuint *data, char ao[6][4], uint8_t faces[6], RGBAmbient corner
         {
             // Direction BACKWARD
             {0, 1, 4, 5, 3, 2}, // Rotation IDENTITY (none)
-            {4, 5, 1, 0, 3, 2}, // Rotation LEFT
-            {5, 4, 0, 1, 3, 2}, // Rotation RIGHT
+            {5, 4, 0, 1, 3, 2}, // Rotation LEFT
+            {4, 5, 1, 0, 3, 2}, // Rotation RIGHT
             {1, 0, 5, 4, 3, 2}  // Rotation HALF (180 degree)
         }
     };

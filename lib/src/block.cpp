@@ -140,9 +140,9 @@ namespace konstructs {
         case DIRECTION_BACKWARD:
             if(fabs(vector(0)) > fabs(vector(1))) {
                 if(vector(0) <= 0) {
-                    return ROTATION_RIGHT;
-                } else {
                     return ROTATION_LEFT;
+                } else {
+                    return ROTATION_RIGHT;
                 }
             } else {
                 if(vector(1) <= 0) {
