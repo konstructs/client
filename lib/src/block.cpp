@@ -6,6 +6,21 @@ namespace konstructs {
     Block::Block(const Vector3i position, const BlockData data):
         position(position), data(data) {}
 
+    const std::string direction_to_string[6] = {
+        "UP",
+        "DOWN",
+        "RIGHT",
+        "LEFT",
+        "FORWARD",
+        "BACKWARD"
+    };
+
+    const std::string rotation_to_string[4] = {
+        "IDENTITY (none)",
+        "LEFT",
+        "RIGHT",
+        "HALF (180 degrees)"
+    };
 
     const std::unordered_map<const Vector3i, const uint8_t, matrix_hash<Vector3i>> vector_to_direction = {
         {Vector3i(0,1,0), DIRECTION_UP},
@@ -125,9 +140,9 @@ namespace konstructs {
         case DIRECTION_BACKWARD:
             if(fabs(vector(0)) > fabs(vector(1))) {
                 if(vector(0) <= 0) {
-                    return ROTATION_RIGHT;
-                } else {
                     return ROTATION_LEFT;
+                } else {
+                    return ROTATION_RIGHT;
                 }
             } else {
                 if(vector(1) <= 0) {
