@@ -271,7 +271,9 @@ private:
 
         int n = 0;
         for (auto it=text_list.cbegin(); it != text_list.cend(); ++it, n++) {
-            if (n < (int)text_list.size() - 10) continue;
+            if (n < (int)text_list.size() - 10) {
+                continue;
+            }
             os << *it << std::endl;
         }
 
