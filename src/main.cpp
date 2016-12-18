@@ -231,6 +231,7 @@ public:
             hud_shader.render(mSize.x(), mSize.y(), mx, my, hud, blocks);
             update_radius();
             print_top_text();
+            print_hud_descr_text(hud.get_selection());
         } else if(!menu_state) {
             show_menu(2, client.get_error_message());
         }
@@ -278,6 +279,21 @@ private:
         nvgFontBlur(mNVGContext, 0.8f);
         nvgFontSize(mNVGContext, 20.0f);
         nvgTextBox(mNVGContext, 10, 20, width - 10, os.str().c_str(), NULL);
+    }
+
+    void print_hud_descr_text(int selection) {
+        int width, height;
+        glfwGetFramebufferSize(mGLFWWindow, &width, &height);
+
+        ostringstream os;
+        os << "Selected slot " << selection << std::endl;
+
+        glActiveTexture(GL_TEXTURE0);
+
+        nvgFontBlur(mNVGContext, 0.8f);
+        nvgFontSize(mNVGContext, ((float)height * 0.03));
+        nvgTextAlign(mNVGContext, 2);
+        nvgTextBox(mNVGContext, 10, height - (height * 0.08), width - 10, os.str().c_str(), NULL);
     }
 
     int translate_button(int button) {
