@@ -111,7 +111,7 @@ namespace konstructs {
                     vy = 1;
                 } else if(dy == 0) {
                     // Jump when walking changes the acceleration upwards to 8
-                    dy = 5.0f * CAMERA_OFFSET;
+                    dy = 3.5f * CAMERA_OFFSET;
                 } else {
                     // Get middle of block
                     Vector3i iPos((int)(position[0] + 0.5f), (int)(position[1]), (int)(position[2] + 0.5f));
