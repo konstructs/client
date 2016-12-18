@@ -8,7 +8,7 @@ namespace konstructs {
     using namespace Eigen;
     using nonstd::nullopt;
 
-    static float CAMERA_OFFSET = 1.3f;
+    static float CAMERA_OFFSET = 2.3f;
     static Vector3f CAMERA_OFFSET_VECTOR = Vector3f(0, CAMERA_OFFSET, 0);
 
     static bool block_is_obstacle(const optional<BlockData> &block, const BlockTypeInfo &blocks) {
@@ -214,7 +214,7 @@ namespace konstructs {
         float x = position[0];
         float y = position[1];
         float z = position[2];
-        int height = 3;
+        int height = 4;
         int p = chunked(x);
         int q = chunked(z);
         int k = chunked(y);
@@ -228,7 +228,7 @@ namespace konstructs {
         try {
 
             if (block_is_obstacle(world.get_block(feet()), blocks)) {
-                position[1] += (pad / 32.0f);
+                position[1] += (pad / 16.0f);
                 return 1;
             }
 
@@ -250,11 +250,11 @@ namespace konstructs {
                 position[1] = ny - pad;
                 result = 1;
             }
-            if (py > pad && block_is_obstacle(world.get_block(Vector3i(nx, ny + 1, nz)), blocks)) {
+            if (py > pad && block_is_obstacle(world.get_block(Vector3i(nx, ny + 2, nz)), blocks)) {
                 position[1] = ny + pad;
                 result = 1;
             }
-            for (int dy = -1; dy < height - 2; dy++) {
+            for (int dy = -2; dy < height - 3; dy++) {
                 if (px < -pad && block_is_obstacle(world.get_block(Vector3i(nx - 1, ny - dy, nz)), blocks)) {
                     position[0] = nx - pad;
                 }
