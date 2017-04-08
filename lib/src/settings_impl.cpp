@@ -14,8 +14,16 @@ namespace konstructs {
         return std::string(value);
     }
 
+    void SettingsImpl::set_conf_string(std::string group, std::string key, std::string value) {
+        ini.SetValue(group.c_str(), key.c_str(), value.c_str());
+    }
+
     bool SettingsImpl::get_conf_boolean(std::string group, std::string key, bool def_val) {
         return ini.GetBoolValue(group.c_str(), key.c_str(), def_val);
+    }
+
+    void SettingsImpl::set_conf_boolean(std::string group, std::string key, bool value) {
+        ini.SetBoolValue(group.c_str(), key.c_str(), value);
     }
 
     void SettingsImpl::save() {

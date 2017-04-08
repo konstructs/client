@@ -10,7 +10,9 @@ namespace konstructs {
     public:
         SettingsImpl(const std::string settings_file);
         std::string get_conf_string(std::string group, std::string key, std::string def_val);
+        void set_conf_string(std::string group, std::string key, std::string value);
         bool get_conf_boolean(std::string group, std::string key, bool def_val);
+        void set_conf_boolean(std::string group, std::string key, bool value);
         void save();
 
     private:
