@@ -27,7 +27,8 @@ namespace konstructs {
     }
 
     void SettingsImpl::save() {
-        ini.Save(settings_file_path);
+        std::cout << "Save configuration to " << settings_file_path << std::endl;
+        ini.SaveFile(settings_file_path.c_str());
     }
 
     Settings * load_settings(std::string file_path) {
