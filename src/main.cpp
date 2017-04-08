@@ -65,7 +65,8 @@ public:
     Konstructs(const string &hostname,
                const string &username,
                const string &password,
-               bool debug_mode) :
+               bool debug_mode,
+               Settings* config) :
         nanogui::Screen(Eigen::Vector2i(KONSTRUCTS_APP_WIDTH,
                                         KONSTRUCTS_APP_HEIGHT),
                         KONSTRUCTS_APP_TITLE),
@@ -94,7 +95,8 @@ public:
         debug_mode(debug_mode),
         debug_text_enabled(false),
         frame(0),
-        click_delay(0) {
+        click_delay(0),
+        config(config) {
 
         using namespace nanogui;
         performLayout(mNVGContext);
@@ -704,6 +706,9 @@ private:
                 window->dispose();
                 menu_state = false;
                 setup_connection();
+                config->set_conf_string("server", "hostname", hostname);
+                config->set_conf_string("server", "username", username);
+                config->save();
             }
         });
 
@@ -763,6 +768,7 @@ private:
     uint32_t max_faces;
     double frame_time;
     uint32_t click_delay;
+    Settings* config;
 };
 
 #ifdef WIN32
@@ -811,13 +817,14 @@ int main(int argc, char ** argv) {
     std::string username = "";
     std::string password = "";
     bool debug_mode = false;
+    Settings* conf;
 
     char settings_path[255];
     if(const char* env_home = std::getenv("HOME")) {
         snprintf(settings_path, 255, "%s/%s", env_home, ".konstructs.conf");
 
         std::cout << "Settings loaded from " << settings_path << std::endl;
-        Settings *conf = load_settings(settings_path);
+        conf = load_settings(settings_path);
 
         hostname = conf->get_conf_string("server", "hostname", "play.konstructs.org");
         username = conf->get_conf_string("server", "username", "");
@@ -872,7 +879,7 @@ int main(int argc, char ** argv) {
         nanogui::init();
 
         {
-            nanogui::ref<Konstructs> app = new Konstructs(hostname, username, password, debug_mode);
+            nanogui::ref<Konstructs> app = new Konstructs(hostname, username, password, debug_mode, conf);
             app->drawAll();
             app->setVisible(true);
             nanogui::mainloop();
