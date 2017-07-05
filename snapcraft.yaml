@@ -1,5 +1,7 @@
+---
+
 name: konstructs-client
-version: 0
+version: git
 summary: A voxel based game client
 description: An open source Infiniminer/Minecraft inspired multiplayer game.
 confinement: strict
@@ -17,14 +19,14 @@ apps:
 parts:
   launcher:
     plugin: dump
-    source: .
-    snap: [ "konstructs-snap-wrapper" ]
+    source: package
+    snap: ["konstructs-snap-wrapper"]
   gui:
     plugin: nil
     after: [desktop-gtk3]
   client:
     plugin: cmake
-    source: https://github.com/konstructs/client.git
+    source: .
     configflags: [-DCMAKE_INSTALL_PREFIX=/]
     build-packages:
       - build-essential
