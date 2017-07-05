@@ -3,6 +3,7 @@
 
 SHELL=/bin/bash
 PROJECT_DIR=$$PWD/..
+DOCKER ?= docker
 
 linux: build/konstructs
 
@@ -17,7 +18,7 @@ build/konstructs:
 	@echo "# Use Docker to build a Linux build"
 	@echo -e "\033[0m"
 
-	docker run -ti -v ${PROJECT_DIR}:/build \
+	${DOCKER} run -ti -v ${PROJECT_DIR}:/build \
 		-e HOST_UID=$$UID \
 		nsgb/konstructs-build-image-linux \
 		make docker-linux -C package
@@ -36,7 +37,7 @@ docs:
 	@echo "# Use Docker to build docs with Doxygen"
 	@echo -e "\033[0m"
 
-	docker run -ti -v ${PROJECT_DIR}:/build \
+	${DOCKER} run -ti -v ${PROJECT_DIR}:/build \
 		-e HOST_UID=$$UID \
 		nsgb/konstructs-build-image-docs \
 		doxygen
@@ -54,7 +55,7 @@ windows:
 	@echo "# Use Docker to cross compile a Windows build"
 	@echo -e "\033[0m"
 
-	docker run -ti -v ${PROJECT_DIR}:/build \
+	${DOCKER} run -ti -v ${PROJECT_DIR}:/build \
 		-e HOST_UID=$$UID \
 		nsgb/konstructs-build-image-windows \
 		make docker-windows -C package
@@ -112,7 +113,7 @@ zip: windows
 	@echo "# Use Docker to make the zip package"
 	@echo -e "\033[0m"
 
-	docker run -ti -v ${PROJECT_DIR}:/build \
+	${DOCKER} run -ti -v ${PROJECT_DIR}:/build \
 		-e TRAVIS_BUILD_NUMBER \
 		-e HOST_UID=$$UID \
 		nsgb/konstructs-build-image-windows \
@@ -166,7 +167,7 @@ upload-docs: docs
 	aws s3 sync ../docs/html/ s3://doc.konstructs.org/client/ --acl public-read --delete
 
 astyle:
-	docker run -ti -v ${PROJECT_DIR}:/build \
+	${DOCKER} run -ti -v ${PROJECT_DIR}:/build \
 		nsgb/konstructs-build-image-astyle \
 		make docker-astyle -C package
 
