@@ -5,7 +5,6 @@ SHELL=/bin/bash
 PROJECT_DIR=$$PWD/..
 
 linux: build/konstructs
-tar: konstructs-client.tar.bz2
 
 snap:
 	sed -i "s/version: 0/version: $(shell git describe --abbrev=0 --tags | tr -d v)/" snapcraft.yaml
@@ -97,19 +96,6 @@ docker-linux:
 	cd build && cmake ../.. && make
 	chown -R $$HOST_UID build
 
-konstructs-client.tar.bz2: linux
-	@echo -e "\033[1m"
-	@echo "# Package the build in a tar-ball"
-	@echo -e "\033[0m"
-
-	mkdir -p konstructs-client-linux
-	cp build/konstructs konstructs-client-linux
-	cp -r ../textures konstructs-client-linux
-	cp -r ../models konstructs-client-linux
-	cp -r ../shaders konstructs-client-linux
-	tar cfj konstructs-client.tar.bz2 konstructs-client-linux
-	rm -rf konstructs-client-linux
-
 package-prep:
 	@echo -e "\033[1m"
 	@echo "# Fetch remote tags and unshallow the repo (if needed)"
@@ -121,28 +107,6 @@ package-prep:
 	# Travis only fetch the 50 last commits, this fixes that.
 	git fetch --unshallow || :
 
-deb: linux package-prep
-	@echo -e "\033[1m"
-	@echo "# Use Docker to make the deb package"
-	@echo -e "\033[0m"
-
-	docker run -ti -v ${PROJECT_DIR}:/build \
-		-e TRAVIS_BUILD_NUMBER \
-		-e HOST_UID=$$UID \
-		nsgb/konstructs-build-image-linux \
-		make docker-deb -C package
-
-rpm: linux package-prep
-	@echo -e "\033[1m"
-	@echo "# Use Docker to make the rpm package"
-	@echo -e "\033[0m"
-
-	docker run -ti -v ${PROJECT_DIR}:/build \
-		-e TRAVIS_BUILD_NUMBER \
-		-e HOST_UID=$$UID \
-		nsgb/konstructs-build-image-linux \
-		make docker-rpm -C package
-
 zip: windows
 	@echo -e "\033[1m"
 	@echo "# Use Docker to make the zip package"
@@ -153,7 +117,6 @@ zip: windows
 		-e HOST_UID=$$UID \
 		nsgb/konstructs-build-image-windows \
 		make docker-zip -C package
-
 
 docker-package-prep:
 	@echo -e "\033[1m"
@@ -169,53 +132,6 @@ docker-package-prep:
 	cp build/konstructs konstructs-client-package/usr/local/bin/konstructs-client
 	cp konstructs-client.desktop \
 		konstructs-client-package/usr/share/applications/konstructs-client.desktop
-
-docker-deb: docker-package-prep
-	@echo -e "\033[1m"
-	@echo "# Make a deb package"
-	@echo -e "\033[0m"
-
-	fpm -s dir -t deb \
-		-C konstructs-client-package \
-		-v $(shell git describe --abbrev=0 --tags | tr -d v) \
-		--iteration $${TRAVIS_BUILD_NUMBER:=0} \
-		--license MIT \
-		--depends libglfw2 \
-		--depends zlib1g \
-		--maintainer "Stefan Berggren <nsg@nsg.cc>" \
-		--url https://github.com/konstructs/client \
-		-n konstructs-client \
-		usr/local/bin/konstructs-client \
-		usr/local/share/konstructs-client/textures \
-		usr/local/share/konstructs-client/models \
-		usr/local/share/konstructs-client/shaders \
-		usr/share/applications/konstructs-client.desktop
-
-	chown $$HOST_UID *.deb
-	rm -rf konstructs-client-package
-
-docker-rpm: docker-package-prep
-	@echo -e "\033[1m"
-	@echo "# Make a rpm package"
-	@echo -e "\033[0m"
-
-	fpm -s dir -t rpm \
-		-C konstructs-client-package \
-		-v $(shell git describe --abbrev=0 --tags | tr -d v) \
-		--iteration $${TRAVIS_BUILD_NUMBER:=0} \
-		--license MIT \
-		--depends zlib \
-		--maintainer "Stefan Berggren <nsg@nsg.cc>" \
-		--url https://github.com/konstructs/client \
-		-n konstructs-client \
-		usr/local/bin/konstructs-client \
-		usr/local/share/konstructs-client/textures \
-		usr/local/share/konstructs-client/models \
-		usr/local/share/konstructs-client/shaders \
-		usr/share/applications/konstructs-client.desktop
-
-	chown $$HOST_UID *.rpm
-	rm -rf konstructs-client-package
 
 docker-zip: /tmp/build-deps/zlib-bin
 	@echo -e "\033[1m"
@@ -276,13 +192,10 @@ clean:
 	rm -rf \
 		konstructs-client-linux \
 		build build-windows \
-		konstructs-client.tar.bz2 \
-		konstructs-client_*_amd64.deb \
-		konstructs-client-*.x86_64.rpm \
 		konstructs-client.zip
 	type snapcraft >/dev/null 2>&1 && snapcraft clean
 
-.PHONY: linux osx window clean docs tar zip deb rpm test astyle
-.PHONY: docker-deb docker-linux docker-package-prep docker-rpm docker-windows docker-zip
+.PHONY: linux osx window clean docs zip test astyle
+.PHONY: docker-linux docker-package-prep docker-windows docker-zip
 .PHONY: package-prep
 .PHONY: upload-docs
