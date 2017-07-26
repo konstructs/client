@@ -7,12 +7,6 @@ PROJECT_DIR=$$PWD/..
 linux: build/konstructs
 tar: konstructs-client.tar.bz2
 
-snap:
-	sed -i "s/version: 0/version: $(shell git describe --abbrev=0 --tags | tr -d v)/" snapcraft.yaml
-	snapcraft clean
-	snapcraft cleanbuild
-	sed -i "s/version: $(shell git describe --abbrev=0 --tags | tr -d v)/version: 0/" snapcraft.yaml
-
 build/konstructs:
 	@echo -e "\033[1m"
 	@echo "# Use Docker to build a Linux build"
@@ -280,7 +274,6 @@ clean:
 		konstructs-client_*_amd64.deb \
 		konstructs-client-*.x86_64.rpm \
 		konstructs-client.zip
-	type snapcraft >/dev/null 2>&1 && snapcraft clean
 
 .PHONY: linux osx window clean docs tar zip deb rpm test astyle
 .PHONY: docker-deb docker-linux docker-package-prep docker-rpm docker-windows docker-zip

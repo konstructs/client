@@ -1,9 +1,9 @@
 /build
 /package/build/
 /package/build-windows/
-/package/parts/
-/package/stage/
-/package/prime/
+/parts/
+/stage/
+/prime/
 /docs/html
 /docs/latex
 /docs/*.db
@@ -18,3 +18,4 @@
 *.filters
 *.cproject
 *.project
+*.snap
