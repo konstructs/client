@@ -1,6 +1,6 @@
 ## Konstructs
 
-[![Join the chat at https://gitter.im/konstructs/client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/konstructs/client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/konstructs/client.svg?branch=master)](https://travis-ci.org/konstructs/client)
+[![Join the chat at https://gitter.im/konstructs/client](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/konstructs/client?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/konstructs/client.svg?branch=master)](https://travis-ci.org/konstructs/client) [![Snap Status](https://build.snapcraft.io/badge/konstructs/client.svg)](https://build.snapcraft.io/user/konstructs/client)
 
 This is a Infiniminer/Minecraft inspired multiplayer open source game, focused on massive gameplay. We are trying to remove some of the limitations built into the original games.
 
