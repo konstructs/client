@@ -22,7 +22,7 @@ matrix:
     - os: linux
       compiler: gcc
       env:
-        - MAKE_COMMAND="test linux tar deb rpm"
+        - MAKE_COMMAND="test linux"
         - UPLOAD_TO_GH=yes
     - os: linux
       env:
@@ -52,7 +52,7 @@ script:
 
 before_deploy:
   - "mkdir -p upload"
-  - "mv package/*.tar.bz2 package/*.deb package/*.rpm package/*.zip upload || true"
+  - "mv package/*.zip upload || true"
   - "rm -f upload/*source*"
 
 deploy:
