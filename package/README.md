@@ -24,21 +24,9 @@ This will plain and simple build the project on OS X, no install packages are ge
 make osx
 ```
 
-## Build a tar-ball
-This build produces a `tar.bz2` with everything you need to run the game. This build step is primary made for our Travis builds that we [distribute at Bintray](https://bintray.com/konstructs/linux/client/view).
-
-```
-make tar
-```
-
 ## Build a zip archive
 This build produces a `.zip` with everything you need to run the game under Windows. This build step is primary made for our Travis builds that we [distribute at Bintray](https://bintray.com/konstructs/windows/client/view).
 
 ```
 make zip
 ```
-
-## Build Linux install packages
-This build produces a `.deb` or a `.rpm`. We uses this to build packages on Travis for Bintray.
-
-`make deb`, `make rpm` or `make snap`
