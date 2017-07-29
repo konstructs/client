@@ -47,6 +47,9 @@ notifications:
     on_failure: always  # options: [always|never|change] default: always
     on_start: always    # options: [always|never|change] default: always
 
+before_script:
+  - grep $(date +%Y) LICENSE
+
 script:
   - make $MAKE_COMMAND -C package
 
