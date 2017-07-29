@@ -4,8 +4,8 @@
 #if defined(__APPLE__)
     #define GLFW_INCLUDE_GLCOREARB
 #elif defined(WIN32)
-    #define GLEW_STATIC
-    #include <GL/glew.h>
+    #include <windows.h>
+    #include <glad/glad.h>
 #else
     #define GL_GLEXT_PROTOTYPES
 #endif

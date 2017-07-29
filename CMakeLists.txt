@@ -50,7 +50,7 @@ find_package(ZLIB REQUIRED)
 include_directories(
   dependencies/nanogui/include
   dependencies/nanogui/ext/glfw/include
-  dependencies/nanogui/ext/glew/include
+  dependencies/nanogui/ext/glad/include
   dependencies/nanogui/ext/eigen
   dependencies/nanogui/ext/nanovg/src
   dependencies/optional-lite
@@ -59,7 +59,9 @@ include_directories(
 
 FILE(
   GLOB SOURCE_FILES
-  src/*.cpp)
+  src/*.cpp
+  dependencies/nanogui/ext/glad/src/glad.c
+  )
 
 add_executable(konstructs ${SOURCE_FILES})
 
@@ -67,7 +69,7 @@ set(konstructs_LIBS
     konstructs-lib
     ${ZLIB_LIBRARIES}
     nanogui ${NANOGUI_EXTRA_LIBS}
-	glfw
+    glfw
 )
 
 if(WIN32 OR MINGW)
