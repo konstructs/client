@@ -14,6 +14,7 @@
 #include <memory>
 #include <utility>
 #include <stdexcept>
+#include <list>
 #include "tiny_obj_loader.h"
 #include "optional.hpp"
 #include "matrix.h"
@@ -230,6 +231,7 @@ public:
             hud_shader.render(mSize.x(), mSize.y(), mx, my, hud, blocks);
             update_radius();
             print_top_text();
+            print_hud_descr_text(hud.get_selection());
         } else if(!menu_state) {
             show_menu(2, client.get_error_message());
         }
@@ -267,10 +269,33 @@ private:
 
         }
 
+        int n = 0;
+        for (auto it=text_list.cbegin(); it != text_list.cend(); ++it, n++) {
+            if (n < (int)text_list.size() - 10) {
+                continue;
+            }
+            os << *it << std::endl;
+        }
+
         glActiveTexture(GL_TEXTURE0);
         nvgFontBlur(mNVGContext, 0.8f);
         nvgFontSize(mNVGContext, 20.0f);
         nvgTextBox(mNVGContext, 10, 20, width - 10, os.str().c_str(), NULL);
+    }
+
+    void print_hud_descr_text(int selection) {
+        int width, height;
+        glfwGetFramebufferSize(mGLFWWindow, &width, &height);
+
+        ostringstream os;
+        os << "Selected slot " << selection << std::endl;
+
+        glActiveTexture(GL_TEXTURE0);
+
+        nvgFontBlur(mNVGContext, 0.8f);
+        nvgFontSize(mNVGContext, ((float)height * 0.03));
+        nvgTextAlign(mNVGContext, 2);
+        nvgTextBox(mNVGContext, 10, height - (height * 0.08), width - 10, os.str().c_str(), NULL);
     }
 
     int translate_button(int button) {
@@ -490,6 +515,9 @@ private:
         case 'T':
             handle_time(packet->to_string());
             break;
+        case 't':
+            handle_text(packet->to_string());
+            break;
         default:
             cout << "UNKNOWN: " << packet->type << endl;
             break;
@@ -627,6 +655,14 @@ private:
         glfwSetTime((double)time_value);
     }
 
+    void handle_text(const string &str) {
+        if(sscanf(str.c_str(), ",%4096[^,]", text_recive_buffer) != 1) {
+            throw std::runtime_error(str);
+        }
+
+        text_list.push_back(string(text_recive_buffer));
+    }
+
     float time_of_day() {
         if (day_length <= 0) {
             return 0.5;
@@ -762,6 +798,8 @@ private:
     uint32_t max_faces;
     double frame_time;
     uint32_t click_delay;
+    char text_recive_buffer[4096];
+    std::list<std::string> text_list;
 };
 
 #ifdef WIN32
