@@ -1,0 +1,37 @@
+#include <iostream>
+#include "settings_impl.h"
+
+namespace konstructs {
+
+    SettingsImpl::SettingsImpl(std::string settings_file) {
+        ini.SetUnicode();
+        ini.LoadFile(settings_file.c_str());
+        settings_file_path = settings_file;
+    }
+
+    std::string SettingsImpl::get_conf_string(std::string group, std::string key, std::string def_val) {
+        const char * value = ini.GetValue(group.c_str(), key.c_str(), def_val.c_str());
+        return std::string(value);
+    }
+
+    void SettingsImpl::set_conf_string(std::string group, std::string key, std::string value) {
+        ini.SetValue(group.c_str(), key.c_str(), value.c_str());
+    }
+
+    bool SettingsImpl::get_conf_boolean(std::string group, std::string key, bool def_val) {
+        return ini.GetBoolValue(group.c_str(), key.c_str(), def_val);
+    }
+
+    void SettingsImpl::set_conf_boolean(std::string group, std::string key, bool value) {
+        ini.SetBoolValue(group.c_str(), key.c_str(), value);
+    }
+
+    void SettingsImpl::save() {
+        std::cout << "Save configuration to " << settings_file_path << std::endl;
+        ini.SaveFile(settings_file_path.c_str());
+    }
+
+    Settings * load_settings(std::string file_path) {
+        return new SettingsImpl(file_path);
+    }
+}
