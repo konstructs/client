@@ -67,10 +67,9 @@ public:
         player(0, Vector3f(0.0f, 0.0f, 0.0f), 0.0f, 0.0f),
         px(0), py(0),
         model_factory(blocks),
-        radius(5),
-        max_radius(20),
+        radius(settings.client.radius_start),
         client(settings.client.debug),
-        view_distance((float)radius*CHUNK_SIZE),
+        view_distance((float)settings.client.radius_start*CHUNK_SIZE),
         near_distance(0.125f),
         sky_shader(settings.client.field_of_view, SKY_TEXTURE, near_distance),
         chunk_shader(settings.client.field_of_view, BLOCK_TEXTURES, DAMAGE_TEXTURE, SKY_TEXTURE, near_distance,
@@ -284,7 +283,7 @@ private:
             view_distance = view_distance - (float)CHUNK_SIZE * 0.2f * ((60.0f - (float)frame_fps) / 60.0f);
             return true;
         } else if(frame_fps >= 60.0
-                  && radius < max_radius
+                  && radius < settings.client.radius_max
                   && model_factory.waiting() == 0
                   && radius <= client.get_loaded_radius()) {
             view_distance = view_distance + 0.05;
@@ -723,7 +722,6 @@ private:
     BlockTypeInfo blocks;
     CrosshairShader crosshair_shader;
     int radius;
-    int max_radius;
     float view_distance;
     float near_distance;
     int day_length;

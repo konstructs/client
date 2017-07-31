@@ -23,6 +23,8 @@ namespace konstructs {
             settings.client.field_of_view = (int)ini.GetLongValue("client", "field_of_view", 70);
             settings.client.window_width = (unsigned int)ini.GetLongValue("client", "window_width", 854);
             settings.client.window_height = (unsigned int)ini.GetLongValue("client", "window_height", 480);
+            settings.client.radius_start = (unsigned int)ini.GetLongValue("client", "radius_start", 5);
+            settings.client.radius_max = (unsigned int)ini.GetLongValue("client", "radius_max", 20);
         }
     }
 
@@ -51,6 +53,8 @@ namespace konstructs {
             ini.SetLongValue("client", "field_of_view", settings.client.field_of_view);
             ini.SetLongValue("client", "window_width", settings.client.window_width);
             ini.SetLongValue("client", "window_height", settings.client.window_height);
+            ini.SetLongValue("client", "radius_start", settings.client.radius_start);
+            ini.SetLongValue("client", "radius_max", settings.client.radius_max);
             ini.SaveFile(settings_path);
         }
     }

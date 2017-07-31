@@ -18,6 +18,8 @@ namespace konstructs {
             int field_of_view;
             unsigned int window_width;
             unsigned int window_height;
+            unsigned int radius_start;
+            unsigned int radius_max;
         };
 
         Server server;
