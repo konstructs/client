@@ -30,10 +30,6 @@
 
 #define KONSTRUCTS_APP_TITLE "Konstructs"
 #define MAX_PENDING_CHUNKS 64
-#define KONSTRUCTS_KEY_JUMP GLFW_KEY_SPACE
-#define KONSTRUCTS_KEY_FLY GLFW_KEY_TAB
-#define KONSTRUCTS_KEY_SNEAK GLFW_KEY_LEFT_SHIFT
-#define KONSTRUCTS_KEY_INVENTORY 'E'
 #define MOUSE_CLICK_DELAY_IN_FRAMES 15
 
 using std::cout;
@@ -145,13 +141,13 @@ public:
             } else {
                 hide_menu();
             }*/
-        } else if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+        } else if (key == settings.keys.debug && action == GLFW_PRESS) {
             debug_text_enabled = !debug_text_enabled;
-        } else if (key == KONSTRUCTS_KEY_FLY
+        } else if (key == settings.keys.fly
                    && action == GLFW_PRESS
                    && settings.client.debug) {
             player.fly();
-        } else if(key == KONSTRUCTS_KEY_INVENTORY && action == GLFW_PRESS) {
+        } else if(key == settings.keys.tertiary && action == GLFW_PRESS) {
             if(hud.get_interactive()) {
                 close_hud();
             } else if (client.is_connected()) {
@@ -381,22 +377,22 @@ private:
         dt = MIN(dt, 0.2);
         dt = MAX(dt, 0.0);
         last_frame = now;
-        if(glfwGetKey(mGLFWWindow, GLFW_KEY_W)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.up)) {
             sz--;
         }
-        if(glfwGetKey(mGLFWWindow, GLFW_KEY_S)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.down)) {
             sz++;
         }
-        if(glfwGetKey(mGLFWWindow, GLFW_KEY_A)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.left)) {
             sx--;
         }
-        if(glfwGetKey(mGLFWWindow, GLFW_KEY_D)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.right)) {
             sx++;
         }
-        if(glfwGetKey(mGLFWWindow, KONSTRUCTS_KEY_JUMP)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.jump)) {
             jump = true;
         }
-        if(glfwGetKey(mGLFWWindow, KONSTRUCTS_KEY_SNEAK)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.sneak)) {
             sneak = true;
         }
         client.position(player.update_position(sz, sx, (float)dt, world,

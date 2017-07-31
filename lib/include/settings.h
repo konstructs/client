@@ -23,8 +23,21 @@ namespace konstructs {
             float frames_per_second;
         };
 
+        struct Keys {
+            int debug;
+            int tertiary;
+            int up;
+            int down;
+            int left;
+            int right;
+            int jump;
+            int fly;
+            int sneak;
+        };
+
         Server server;
         Client client;
+        Keys keys;
     };
 
     /**

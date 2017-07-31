@@ -1,5 +1,6 @@
 #include "settings.h"
 #include "SimpleIni.h"
+#include "GLFW/glfw3.h"
 
 namespace konstructs {
 
@@ -26,6 +27,15 @@ namespace konstructs {
             settings.client.radius_start = (unsigned int)ini.GetLongValue("client", "radius_start", 5);
             settings.client.radius_max = (unsigned int)ini.GetLongValue("client", "radius_max", 20);
             settings.client.frames_per_second = (float)ini.GetLongValue("client", "frames_per_second", 60);
+            settings.keys.up = (int)ini.GetLongValue("keys", "up", GLFW_KEY_W);
+            settings.keys.down = (int)ini.GetLongValue("keys", "down", GLFW_KEY_S);
+            settings.keys.left = (int)ini.GetLongValue("keys", "left", GLFW_KEY_A);
+            settings.keys.right = (int)ini.GetLongValue("keys", "right", GLFW_KEY_D);
+            settings.keys.jump = (int)ini.GetLongValue("keys", "jump", GLFW_KEY_SPACE);
+            settings.keys.fly = (int)ini.GetLongValue("keys", "fly", GLFW_KEY_TAB);
+            settings.keys.sneak = (int)ini.GetLongValue("keys", "sneak", GLFW_KEY_LEFT_SHIFT);
+            settings.keys.tertiary = (int)ini.GetLongValue("keys", "tertiary", GLFW_KEY_E);
+            settings.keys.debug = (int)ini.GetLongValue("keys", "debug", GLFW_KEY_F3);
         }
     }
 
@@ -57,6 +67,15 @@ namespace konstructs {
             ini.SetLongValue("client", "radius_start", settings.client.radius_start);
             ini.SetLongValue("client", "radius_max", settings.client.radius_max);
             ini.SetLongValue("client", "frames_per_second", (long)settings.client.frames_per_second);
+            ini.SetLongValue("keys", "up", settings.keys.up);
+            ini.SetLongValue("keys", "down", settings.keys.down);
+            ini.SetLongValue("keys", "left", settings.keys.left);
+            ini.SetLongValue("keys", "right", settings.keys.right);
+            ini.SetLongValue("keys", "jump", settings.keys.jump);
+            ini.SetLongValue("keys", "fly", settings.keys.fly);
+            ini.SetLongValue("keys", "sneak", settings.keys.sneak);
+            ini.SetLongValue("keys", "tertiary", settings.keys.tertiary);
+            ini.SetLongValue("keys", "debug", settings.keys.debug);
             ini.SaveFile(settings_path);
         }
     }
