@@ -25,6 +25,7 @@ namespace konstructs {
             settings.client.window_height = (unsigned int)ini.GetLongValue("client", "window_height", 480);
             settings.client.radius_start = (unsigned int)ini.GetLongValue("client", "radius_start", 5);
             settings.client.radius_max = (unsigned int)ini.GetLongValue("client", "radius_max", 20);
+            settings.client.frames_per_second = (float)ini.GetLongValue("client", "frames_per_second", 60);
         }
     }
 
@@ -55,6 +56,7 @@ namespace konstructs {
             ini.SetLongValue("client", "window_height", settings.client.window_height);
             ini.SetLongValue("client", "radius_start", settings.client.radius_start);
             ini.SetLongValue("client", "radius_max", settings.client.radius_max);
+            ini.SetLongValue("client", "frames_per_second", (long)settings.client.frames_per_second);
             ini.SaveFile(settings_path);
         }
     }

@@ -290,15 +290,16 @@ private:
 
     bool update_view_distance() {
         double frame_fps = 1.15 / frame_time;
+        float fps = settings.client.frames_per_second;
 
-        if(frame_fps > 0.0 && frame_fps < 60.0 && radius > 1) {
-            view_distance = view_distance - (float)CHUNK_SIZE * 0.2f * ((60.0f - (float)frame_fps) / 60.0f);
+        if(frame_fps > 0.0 && frame_fps < fps && radius > 1) {
+            view_distance = view_distance - (float)CHUNK_SIZE * 0.2f * ((fps - (float)frame_fps) / fps);
             return true;
-        } else if(frame_fps >= 60.0
+        } else if(frame_fps >= fps
                   && radius < settings.client.radius_max
                   && model_factory.waiting() == 0
                   && radius <= client.get_loaded_radius()) {
-            view_distance = view_distance + 0.05;
+            view_distance = view_distance + 0.05f;
             return true;
         } else {
             return false;

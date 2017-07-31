@@ -20,6 +20,7 @@ namespace konstructs {
             unsigned int window_height;
             unsigned int radius_start;
             unsigned int radius_max;
+            float frames_per_second;
         };
 
         Server server;
