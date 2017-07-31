@@ -710,7 +710,7 @@ private:
 
     void setup_connection() {
         try {
-            client.open_connection(settings.server.username, settings.server.password, settings.server.address);
+            client.open_connection(settings);
             load_textures();
             client.set_connected(true);
 

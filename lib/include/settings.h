@@ -7,6 +7,7 @@ namespace konstructs {
     struct Settings {
         struct Server {
             std::string address;
+            unsigned int port;
             std::string username;
             std::string password;
             bool password_save;

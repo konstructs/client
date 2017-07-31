@@ -15,6 +15,7 @@ namespace konstructs {
 
             // Load default values (and set defaults)
             settings.server.address = ini.GetValue("server", "address", "play.konstructs.org");
+            settings.server.port = (unsigned int)ini.GetLongValue("server", "port", 4080);
             settings.server.username = ini.GetValue("server", "username", "");
             settings.server.password = ini.GetValue("server", "password", "");
             settings.server.password_save = !settings.server.password.empty();
@@ -32,6 +33,7 @@ namespace konstructs {
             ini.SetUnicode(true);
 
             ini.SetValue("server", "address", settings.server.address.c_str());
+            ini.SetLongValue("server", "port", settings.server.port);
             ini.SetValue("server", "username", settings.server.username.c_str());
 
             // Only save the password back to the file if it's already there.
