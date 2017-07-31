@@ -20,6 +20,7 @@ namespace konstructs {
             settings.server.password = ini.GetValue("server", "password", "");
             settings.server.password_save = !settings.server.password.empty();
             settings.client.debug = ini.GetBoolValue("client", "debug", false);
+            settings.client.field_of_view = (int)ini.GetLongValue("client", "field_of_view", 70);
         }
     }
 
@@ -45,6 +46,7 @@ namespace konstructs {
             }
 
             ini.SetBoolValue("client", "debug", settings.client.debug);
+            ini.SetLongValue("client", "field_of_view", settings.client.field_of_view);
             ini.SaveFile(settings_path);
         }
     }

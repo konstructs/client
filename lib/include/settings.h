@@ -15,6 +15,7 @@ namespace konstructs {
 
         struct Client {
             bool debug;
+            int field_of_view;
         };
 
         Server server;

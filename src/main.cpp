@@ -73,13 +73,12 @@ public:
         max_radius(20),
         client(settings.client.debug),
         view_distance((float)radius*CHUNK_SIZE),
-        fov(70.0f),
         near_distance(0.125f),
-        sky_shader(fov, SKY_TEXTURE, near_distance),
-        chunk_shader(fov, BLOCK_TEXTURES, DAMAGE_TEXTURE, SKY_TEXTURE, near_distance,
+        sky_shader(settings.client.field_of_view, SKY_TEXTURE, near_distance),
+        chunk_shader(settings.client.field_of_view, BLOCK_TEXTURES, DAMAGE_TEXTURE, SKY_TEXTURE, near_distance,
                      load_chunk_vertex_shader(), load_chunk_fragment_shader()),
         hud_shader(17, 14, INVENTORY_TEXTURE, BLOCK_TEXTURES, FONT_TEXTURE, HEALTH_BAR_TEXTURE),
-        selection_shader(fov, near_distance, 0.52),
+        selection_shader(settings.client.field_of_view, near_distance, 0.52),
         day_length(600),
         last_frame(glfwGetTime()),
         looking_at(nullopt),
@@ -106,7 +105,7 @@ public:
         memset(&fps, 0, sizeof(fps));
 
         tinyobj::shape_t shape = load_player();
-        player_shader = new PlayerShader(fov, PLAYER_TEXTURE, SKY_TEXTURE,
+        player_shader = new PlayerShader(settings.client.field_of_view, PLAYER_TEXTURE, SKY_TEXTURE,
                                          near_distance, shape);
     }
 
@@ -728,7 +727,6 @@ private:
     int radius;
     int max_radius;
     float view_distance;
-    int fov;
     float near_distance;
     int day_length;
     World world;
