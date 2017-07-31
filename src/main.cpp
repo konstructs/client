@@ -35,8 +35,6 @@
 #include "settings.h"
 
 #define KONSTRUCTS_APP_TITLE "Konstructs"
-#define KONSTRUCTS_APP_WIDTH 854
-#define KONSTRUCTS_APP_HEIGHT 480
 #define MAX_PENDING_CHUNKS 64
 #define KONSTRUCTS_KEY_FORWARD 'W'
 #define KONSTRUCTS_KEY_BACKWARD 'S'
@@ -63,8 +61,8 @@ void glfw_error(int error_code, const char *error_string);
 class Konstructs: public nanogui::Screen {
 public:
     Konstructs(Settings settings) :
-        nanogui::Screen(Eigen::Vector2i(KONSTRUCTS_APP_WIDTH,
-                                        KONSTRUCTS_APP_HEIGHT),
+        nanogui::Screen(Eigen::Vector2i(settings.client.window_width,
+                                        settings.client.window_height),
                         KONSTRUCTS_APP_TITLE),
         player(0, Vector3f(0.0f, 0.0f, 0.0f), 0.0f, 0.0f),
         px(0), py(0),
