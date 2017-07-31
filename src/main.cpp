@@ -10,10 +10,7 @@
 #include <nanogui/glutil.h>
 #include <iostream>
 #include <iomanip>
-#include <vector>
 #include <memory>
-#include <utility>
-#include <stdexcept>
 #include "tiny_obj_loader.h"
 #include "optional.hpp"
 #include "matrix.h"
@@ -29,17 +26,10 @@
 #include "hud_shader.h"
 #include "player_shader.h"
 #include "textures.h"
-#include "client.h"
 #include "util.h"
-#include "cube.h"
-#include "settings.h"
 
 #define KONSTRUCTS_APP_TITLE "Konstructs"
 #define MAX_PENDING_CHUNKS 64
-#define KONSTRUCTS_KEY_FORWARD 'W'
-#define KONSTRUCTS_KEY_BACKWARD 'S'
-#define KONSTRUCTS_KEY_LEFT 'A'
-#define KONSTRUCTS_KEY_RIGHT 'D'
 #define KONSTRUCTS_KEY_JUMP GLFW_KEY_SPACE
 #define KONSTRUCTS_KEY_FLY GLFW_KEY_TAB
 #define KONSTRUCTS_KEY_SNEAK GLFW_KEY_LEFT_SHIFT
