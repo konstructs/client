@@ -41,6 +41,13 @@ namespace konstructs {
     };
 
     /**
+     * Find the path to the configuration file
+     * @param r     The path to the config file is returned
+     * @param size  Maximum size allowed
+     */
+    void config_path(char* r, size_t size);
+
+    /**
      * Uses simpleini to populate the Settings struct from a ini file
      * @param A reference to the settings object
      */
