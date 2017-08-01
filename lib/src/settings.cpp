@@ -12,7 +12,7 @@ namespace konstructs {
         } else if (const char* path = std::getenv("SNAP_USER_DATA")) {
             // Looks like Linux and inside a snap, $HOME/snap/konstructs-client/(version)
             snprintf(r, size, "%s/%s", path, "konstructs.conf");
-        } else if (const char* path = std::getenv("HOME")){
+        } else if (const char* path = std::getenv("HOME")) {
             char _path[4096];
             snprintf(_path, 4096, "%s/%s", path, ".config");
             struct stat info;
