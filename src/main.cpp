@@ -705,7 +705,7 @@ private:
 
     void setup_connection() {
         try {
-            client.open_connection(settings);
+            client.open_connection(settings.server);
             load_textures();
             client.set_connected(true);
 

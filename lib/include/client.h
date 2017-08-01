@@ -58,7 +58,7 @@ namespace konstructs {
     class Client {
     public:
         Client(bool debug_mode);
-        void open_connection(Settings settings);
+        void open_connection(Settings::Server server);
         void version(const int version, const string &nick, const string &hash);
         void position(const Vector3f position,
                       const float rx, const float ry);
