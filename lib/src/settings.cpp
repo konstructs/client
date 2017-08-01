@@ -8,7 +8,7 @@ namespace konstructs {
     void config_path(char* r, size_t size) {
         if(const char* path = std::getenv("LOCALAPPDATA")) {
             // Looks like Windows, C:\Users\(user-name)\AppData\Local
-            snprintf(r, size, "%s/%s", path, "konstructs.ini");
+            snprintf(r, size, "%s\\%s", path, "konstructs.ini");
         } else if (const char* path = std::getenv("SNAP_USER_DATA")) {
             // Looks like Linux and inside a snap, $HOME/snap/konstructs-client/(version)
             snprintf(r, size, "%s/%s", path, "konstructs.conf");
