@@ -10,3 +10,6 @@
 [submodule "dependencies/tinyobjloader"]
 	path = dependencies/tinyobjloader
 	url = https://github.com/syoyo/tinyobjloader.git
+[submodule "dependencies/simpleini"]
+	path = dependencies/simpleini
+	url = https://github.com/brofield/simpleini.git

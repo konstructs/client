@@ -13,9 +13,9 @@
 #include "matrix.h"
 #include "optional.hpp"
 #include "chunk.h"
+#include "settings.h"
 
 #define KEEP_EXTRA_CHUNKS 2
-#define DEFAULT_PORT 4080
 
 namespace konstructs {
     using namespace std;
@@ -58,8 +58,7 @@ namespace konstructs {
     class Client {
     public:
         Client(bool debug_mode);
-        void open_connection(const string &nick, const string &hash,
-                             const string &hostname, const int port = DEFAULT_PORT);
+        void open_connection(Settings::Server server);
         void version(const int version, const string &nick, const string &hash);
         void position(const Vector3f position,
                       const float rx, const float ry);

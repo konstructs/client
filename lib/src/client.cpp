@@ -41,23 +41,22 @@ namespace konstructs {
         return error_message;
     }
 
-    void Client::open_connection(const string &nick, const string &hash,
-                                 const string &hostname, const int port) {
+    void Client::open_connection(Settings::Server server) {
         error_message = "";
         struct hostent *host;
         struct sockaddr_in address;
-        if ((host = gethostbyname(hostname.c_str())) == 0) {
+        if ((host = gethostbyname(server.address.c_str())) == 0) {
             #ifdef _WIN32
             std::cerr << "WSAGetLastError: " << WSAGetLastError() << std::endl;
             #endif
             SHOWERROR("gethostbyname");
-            error_message = "Could not find server: " + hostname;
+            error_message = "Could not find server: " + server.address;
             throw std::runtime_error(error_message);
         }
         memset(&address, 0, sizeof(address));
         address.sin_family = AF_INET;
         address.sin_addr.s_addr = ((struct in_addr *)(host->h_addr_list[0]))->s_addr;
-        address.sin_port = htons(port);
+        address.sin_port = htons(server.port);
         if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
             SHOWERROR("socket");
             error_message = "Failed to create socket";
@@ -68,7 +67,7 @@ namespace konstructs {
             error_message = "Could not connect to server";
             throw std::runtime_error(error_message);
         }
-        version(PROTOCOL_VERSION, nick, hash);
+        version(PROTOCOL_VERSION, server.username, server.password);
     }
 
     size_t Client::recv_all(char* out_buf, const size_t size) {

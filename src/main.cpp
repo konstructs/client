@@ -10,10 +10,7 @@
 #include <nanogui/glutil.h>
 #include <iostream>
 #include <iomanip>
-#include <vector>
 #include <memory>
-#include <utility>
-#include <stdexcept>
 #include "tiny_obj_loader.h"
 #include "optional.hpp"
 #include "matrix.h"
@@ -29,22 +26,10 @@
 #include "hud_shader.h"
 #include "player_shader.h"
 #include "textures.h"
-#include "client.h"
 #include "util.h"
-#include "cube.h"
 
 #define KONSTRUCTS_APP_TITLE "Konstructs"
-#define KONSTRUCTS_APP_WIDTH 854
-#define KONSTRUCTS_APP_HEIGHT 480
 #define MAX_PENDING_CHUNKS 64
-#define KONSTRUCTS_KEY_FORWARD 'W'
-#define KONSTRUCTS_KEY_BACKWARD 'S'
-#define KONSTRUCTS_KEY_LEFT 'A'
-#define KONSTRUCTS_KEY_RIGHT 'D'
-#define KONSTRUCTS_KEY_JUMP GLFW_KEY_SPACE
-#define KONSTRUCTS_KEY_FLY GLFW_KEY_TAB
-#define KONSTRUCTS_KEY_SNEAK GLFW_KEY_LEFT_SHIFT
-#define KONSTRUCTS_KEY_INVENTORY 'E'
 #define MOUSE_CLICK_DELAY_IN_FRAMES 15
 
 using std::cout;
@@ -61,44 +46,37 @@ void glfw_error(int error_code, const char *error_string);
 
 class Konstructs: public nanogui::Screen {
 public:
-    Konstructs(const string &hostname,
-               const string &username,
-               const string &password,
-               bool debug_mode) :
-        nanogui::Screen(Eigen::Vector2i(KONSTRUCTS_APP_WIDTH,
-                                        KONSTRUCTS_APP_HEIGHT),
+    Konstructs(Settings settings) :
+        nanogui::Screen(Eigen::Vector2i(settings.client.window_width,
+                                        settings.client.window_height),
                         KONSTRUCTS_APP_TITLE),
-        hostname(hostname),
-        username(username),
-        password(password),
         player(0, Vector3f(0.0f, 0.0f, 0.0f), 0.0f, 0.0f),
         px(0), py(0),
         model_factory(blocks),
-        radius(5),
-        max_radius(20),
-        client(debug_mode),
-        view_distance((float)radius*CHUNK_SIZE),
-        fov(70.0f),
+        radius(settings.client.radius_start),
+        client(settings.client.debug),
+        view_distance((float)settings.client.radius_start*CHUNK_SIZE),
         near_distance(0.125f),
-        sky_shader(fov, SKY_TEXTURE, near_distance),
-        chunk_shader(fov, BLOCK_TEXTURES, DAMAGE_TEXTURE, SKY_TEXTURE, near_distance,
+        sky_shader(settings.client.field_of_view, SKY_TEXTURE, near_distance),
+        chunk_shader(settings.client.field_of_view, BLOCK_TEXTURES, DAMAGE_TEXTURE, SKY_TEXTURE, near_distance,
                      load_chunk_vertex_shader(), load_chunk_fragment_shader()),
         hud_shader(17, 14, INVENTORY_TEXTURE, BLOCK_TEXTURES, FONT_TEXTURE, HEALTH_BAR_TEXTURE),
-        selection_shader(fov, near_distance, 0.52),
+        selection_shader(settings.client.field_of_view, near_distance, 0.52),
         day_length(600),
         last_frame(glfwGetTime()),
         looking_at(nullopt),
         hud(17, 14, 9),
         menu_state(false),
-        debug_mode(debug_mode),
         debug_text_enabled(false),
         frame(0),
-        click_delay(0) {
+        click_delay(0),
+        settings(settings) {
 
         using namespace nanogui;
         performLayout(mNVGContext);
         glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        if (username.size() > 0 && password.size() > 0 && hostname.size() > 0) {
+        Settings::Server server = settings.server;
+        if (server.username.size() > 0 && server.password.size() > 0 && server.address.size() > 0) {
             setup_connection();
         } else {
             show_menu(0, string("Connect to a server"));
@@ -110,7 +88,7 @@ public:
         memset(&fps, 0, sizeof(fps));
 
         tinyobj::shape_t shape = load_player();
-        player_shader = new PlayerShader(fov, PLAYER_TEXTURE, SKY_TEXTURE,
+        player_shader = new PlayerShader(settings.client.field_of_view, PLAYER_TEXTURE, SKY_TEXTURE,
                                          near_distance, shape);
     }
 
@@ -163,13 +141,13 @@ public:
             } else {
                 hide_menu();
             }*/
-        } else if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+        } else if (key == settings.keys.debug && action == GLFW_PRESS) {
             debug_text_enabled = !debug_text_enabled;
-        } else if (key == KONSTRUCTS_KEY_FLY
+        } else if (key == settings.keys.fly
                    && action == GLFW_PRESS
-                   && debug_mode) {
+                   && settings.client.debug) {
             player.fly();
-        } else if(key == KONSTRUCTS_KEY_INVENTORY && action == GLFW_PRESS) {
+        } else if(key == settings.keys.tertiary && action == GLFW_PRESS) {
             if(hud.get_interactive()) {
                 close_hud();
             } else if (client.is_connected()) {
@@ -248,22 +226,34 @@ private:
         if (debug_text_enabled) {
             double frame_fps = 1.15 / frame_time;
             os << std::fixed << std::setprecision(2);
-            os << "Server: " << hostname << " user: " << username << " x: " << player.position(0) << " y: " << player.position(
-                   1) << " z: " << player.position(2) << std::endl;
+            os << "Server: " << settings.server.address
+               << " user: " << settings.server.username
+               << " x: " << player.position(0)
+               << " y: " << player.position(1)
+               << " z: " << player.position(2)
+               << std::endl;
             if(looking_at) {
                 auto l = *looking_at;
                 uint8_t direction = direction_from_vector(l.first.position, l.second.position);
                 uint8_t rotation = rotation_from_vector(direction, player.camera_direction());
-                os << "Pointing at x: " << l.second.position(0) << ", y: " << l.second.position(1) << ", z: " << l.second.position(2) <<
-                   ", dir: " << direction_to_string[direction] << ", rot: " << rotation_to_string[rotation] << std::endl;
+                os << "Pointing at x: " << l.second.position(0) << ", "
+                   << "y: " << l.second.position(1) << ", "
+                   << "z: " << l.second.position(2) << ", "
+                   << "dir: " << direction_to_string[direction] << ", "
+                   << "rot: " << rotation_to_string[rotation]
+                   << std::endl;
             } else {
                 os << "Pointing at nothing." << std::endl;
             }
-            os << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") faces: " <<
-               faces << "(" << max_faces << ") FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
-            os << "Chunks: " << world.size() << " models: " << chunk_shader.size() << endl;
-            os << "Model factory, waiting: " << model_factory.waiting() << " created: " << model_factory.total_created() <<
-               " empty: " << model_factory.total_empty() << " total: " <<  model_factory.total() << endl;
+            os << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") "
+               << "faces: " << faces << "(" << max_faces << ") "
+               << "FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
+            os << "Chunks: " << world.size() << " "
+               << "models: " << chunk_shader.size() << endl;
+            os << "Model factory, waiting: " << model_factory.waiting() << " "
+               << "created: " << model_factory.total_created() << " "
+               << "empty: " << model_factory.total_empty() << " "
+               << "total: " <<  model_factory.total() << endl;
 
         }
 
@@ -286,15 +276,16 @@ private:
 
     bool update_view_distance() {
         double frame_fps = 1.15 / frame_time;
+        float fps = settings.client.frames_per_second;
 
-        if(frame_fps > 0.0 && frame_fps < 60.0 && radius > 1) {
-            view_distance = view_distance - (float)CHUNK_SIZE * 0.2f * ((60.0f - (float)frame_fps) / 60.0f);
+        if(frame_fps > 0.0 && frame_fps < fps && radius > 1) {
+            view_distance = view_distance - (float)CHUNK_SIZE * 0.2f * ((fps - (float)frame_fps) / fps);
             return true;
-        } else if(frame_fps >= 60.0
-                  && radius < max_radius
+        } else if(frame_fps >= fps
+                  && radius < settings.client.radius_max
                   && model_factory.waiting() == 0
                   && radius <= client.get_loaded_radius()) {
-            view_distance = view_distance + 0.05;
+            view_distance = view_distance + 0.05f;
             return true;
         } else {
             return false;
@@ -386,22 +377,22 @@ private:
         dt = MIN(dt, 0.2);
         dt = MAX(dt, 0.0);
         last_frame = now;
-        if(glfwGetKey(mGLFWWindow, GLFW_KEY_W)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.up)) {
             sz--;
         }
-        if(glfwGetKey(mGLFWWindow, GLFW_KEY_S)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.down)) {
             sz++;
         }
-        if(glfwGetKey(mGLFWWindow, GLFW_KEY_A)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.left)) {
             sx--;
         }
-        if(glfwGetKey(mGLFWWindow, GLFW_KEY_D)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.right)) {
             sx++;
         }
-        if(glfwGetKey(mGLFWWindow, KONSTRUCTS_KEY_JUMP)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.jump)) {
             jump = true;
         }
-        if(glfwGetKey(mGLFWWindow, KONSTRUCTS_KEY_SNEAK)) {
+        if(glfwGetKey(mGLFWWindow, settings.keys.sneak)) {
             sneak = true;
         }
         client.position(player.update_position(sz, sx, (float)dt, world,
@@ -682,27 +673,28 @@ private:
         #if defined(KONSTRUCTS_SINGLE_PLAYER)
         gui->addGroup("Singleplayer game");
         gui->addButton("Play", [&]() {
-            username = "singleplayer";
-            password = "singleplayer";
-            hostname = "localhost";
+            settings.server.username = "singleplayer";
+            settings.server.password = "singleplayer";
+            settings.server.address = "localhost";
             window->dispose();
             menu_state = false;
             setup_connection();
         });
         gui->addGroup("Multiplayer");
         #endif
-        gui->addVariable("Server address", hostname);
-        gui->addVariable("Username", username);
-        gui->addVariable("Password", password);
+        gui->addVariable("Server address", settings.server.address);
+        gui->addVariable("Username", settings.server.username);
+        gui->addVariable("Password", settings.server.password);
         gui->addButton("Connect", [&]() {
-            if (username != "" &&
-                    password != "" &&
-                    hostname != "") {
+            if (settings.server.username != "" &&
+                    settings.server.password != "" &&
+                    settings.server.address != "") {
                 // Note: The mouse pointer is intentionally not locked here.
                 // See: setup_connection()
                 window->dispose();
                 menu_state = false;
                 setup_connection();
+                save_settings(settings);
             }
         });
 
@@ -713,7 +705,7 @@ private:
 
     void setup_connection() {
         try {
-            client.open_connection(username, password, hostname);
+            client.open_connection(settings.server);
             load_textures();
             client.set_connected(true);
 
@@ -726,15 +718,10 @@ private:
         }
     }
 
-    std::string hostname;
-    std::string username;
-    std::string password;
     BlockTypeInfo blocks;
     CrosshairShader crosshair_shader;
     int radius;
-    int max_radius;
     float view_distance;
-    int fov;
     float near_distance;
     int day_length;
     World world;
@@ -754,7 +741,6 @@ private:
     FPS fps;
     double last_frame;
     bool menu_state;
-    bool debug_mode;
     bool debug_text_enabled;
     nanogui::Window *window;
     uint32_t frame;
@@ -762,6 +748,7 @@ private:
     uint32_t max_faces;
     double frame_time;
     uint32_t click_delay;
+    Settings settings;
 };
 
 #ifdef WIN32
@@ -805,10 +792,10 @@ void glfw_error(int error_code, const char *error_string) {
 
 
 int main(int argc, char ** argv) {
-    std::string hostname = "play.konstructs.org";
-    std::string username = "";
-    std::string password = "";
-    bool debug_mode = false;
+
+    Settings settings;
+    load_settings(settings);
+    save_settings(settings);
 
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
@@ -819,7 +806,7 @@ int main(int argc, char ** argv) {
                 if (!argv[i+1]) {
                     print_usage();
                 } else {
-                    hostname = argv[i+1];
+                    settings.server.address = argv[i+1];
                     ++i;
                 }
             }
@@ -827,7 +814,7 @@ int main(int argc, char ** argv) {
                 if (!argv[i+1]) {
                     print_usage();
                 } else {
-                    username = argv[i+1];
+                    settings.server.username = argv[i+1];
                     ++i;
                 }
             }
@@ -835,12 +822,12 @@ int main(int argc, char ** argv) {
                 if (!argv[i+1]) {
                     print_usage();
                 } else {
-                    password = argv[i+1];
+                    settings.server.password = argv[i+1];
                     ++i;
                 }
             }
             if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0) {
-                debug_mode = true;
+                settings.client.debug = true;
             }
         }
 
@@ -856,7 +843,7 @@ int main(int argc, char ** argv) {
         nanogui::init();
 
         {
-            nanogui::ref<Konstructs> app = new Konstructs(hostname, username, password, debug_mode);
+            nanogui::ref<Konstructs> app = new Konstructs(settings);
             app->drawAll();
             app->setVisible(true);
             nanogui::mainloop();
