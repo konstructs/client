@@ -33,7 +33,7 @@ echo "-------------------------------------------------------"
 
 export LIBGL_DEBUG=verbose
 export LD_LIBRARY_PATH=$SNAP_LIBRARY_PATH:$LD_LIBRARY_PATH
-$SNAP/konstructs
+$SNAP/konstructs $@
 
 echo "-------------------------------------------------------"
 echo "Did the client crash? If yes please report the problem."
