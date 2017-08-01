@@ -32,7 +32,10 @@ namespace konstructs {
 
         CSimpleIniA ini;
         ini.SetUnicode(true);
-        ini.LoadFile(settings_path);
+        if (ini.LoadFile(settings_path) < 0) {
+            std::cout << "Failed to load config file " << settings_path << std::endl;
+            std::cout << "This is normal if this is your first run." << std::endl;
+        }
 
         // Load default values (and set defaults)
         settings.server.address = ini.GetValue("server", "address", "play.konstructs.org");
@@ -93,6 +96,8 @@ namespace konstructs {
         ini.SetLongValue("keys", "sneak", settings.keys.sneak);
         ini.SetLongValue("keys", "tertiary", settings.keys.tertiary);
         ini.SetLongValue("keys", "debug", settings.keys.debug);
-        ini.SaveFile(settings_path);
+        if (ini.SaveFile(settings_path) < 0) {
+            std::cout << "Failed to save config file " << settings_path << std::endl;
+        }
     }
 }
