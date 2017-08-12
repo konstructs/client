@@ -13,7 +13,7 @@ void Cli::print_usage() {
     exit(0);
 }
 
-void Cli::argument_parser(int argc, char **argv, Settings settings) {
+void Cli::argument_parser(int argc, char **argv, Settings *settings) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             Cli::print_usage();
@@ -22,7 +22,7 @@ void Cli::argument_parser(int argc, char **argv, Settings settings) {
             if (!argv[i+1]) {
                 Cli::print_usage();
             } else {
-                settings.server.address = argv[i+1];
+                settings->server.address = argv[i+1];
                 ++i;
             }
         }
@@ -30,7 +30,7 @@ void Cli::argument_parser(int argc, char **argv, Settings settings) {
             if (!argv[i+1]) {
                 Cli::print_usage();
             } else {
-                settings.server.username = argv[i+1];
+                settings->server.username = argv[i+1];
                 ++i;
             }
         }
@@ -38,12 +38,12 @@ void Cli::argument_parser(int argc, char **argv, Settings settings) {
             if (!argv[i+1]) {
                 Cli::print_usage();
             } else {
-                settings.server.password = argv[i+1];
+                settings->server.password = argv[i+1];
                 ++i;
             }
         }
         if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0) {
-            settings.client.debug = true;
+            settings->client.debug = true;
         }
     }
 }

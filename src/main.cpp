@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     load_settings(settings);
     save_settings(settings);
 
-    Cli::argument_parser(argc, argv, settings);
+    Cli::argument_parser(argc, argv, &settings);
 
     if (Platform::init_winsock()) {
         printf("Failed to load winsock");

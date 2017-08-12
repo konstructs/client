@@ -16,7 +16,13 @@ namespace konstructs {
          */
         static void print_usage();
 
-        static void argument_parser(int argc, char **argv, Settings settings);
+        /**
+         * Simple argument parser that updates the settings struct
+         * @param argc      From main()
+         * @param argv      From main()
+         * @param settings  The settings object to update
+         */
+        static void argument_parser(int argc, char **argv, Settings *settings);
     };
 
 }
