@@ -9,11 +9,7 @@ using nonstd::optional;
 using nonstd::nullopt;
 using std::pair;
 
-
 Konstructs::Konstructs(Settings settings) :
-        nanogui::Screen(Eigen::Vector2i(settings.client.window_width,
-                                        settings.client.window_height),
-                        KONSTRUCTS_APP_TITLE),
         player(0, Vector3f(0.0f, 0.0f, 0.0f), 0.0f, 0.0f),
         px(0), py(0),
         model_factory(blocks),
@@ -35,7 +31,7 @@ Konstructs::Konstructs(Settings settings) :
         click_delay(0),
         settings(settings),
         network(settings) {
-
+/*
     using namespace nanogui;
     performLayout(mNVGContext);
     glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -54,6 +50,7 @@ Konstructs::Konstructs(Settings settings) :
     tinyobj::shape_t shape = load_player();
     player_shader = new PlayerShader(settings.client.field_of_view, PLAYER_TEXTURE, SKY_TEXTURE,
                                      near_distance, shape);
+    */
 }
 
 Konstructs::~Konstructs() {
