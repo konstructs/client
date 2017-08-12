@@ -1,4 +1,8 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-attributes"
 #include <nanogui/nanogui.h>
+#pragma GCC diagnostic pop
+
 #include <nanogui/glutil.h>
 #include <iostream>
 #include <konstructs.h>

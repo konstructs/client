@@ -1,7 +1,11 @@
 #ifndef KONSTRUCTS_KONSTRUCTS_H
 #define KONSTRUCTS_KONSTRUCTS_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-attributes"
 #include <nanogui/nanogui.h>
+#pragma GCC diagnostic pop
+
 #if defined(WIN32)
 #define _WINSOCKAPI_
     #include <windows.h>
