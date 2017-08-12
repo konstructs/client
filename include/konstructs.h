@@ -30,6 +30,7 @@
 #include "textures.h"
 #include "util.h"
 #include "settings.h"
+#include "network.h"
 
 #define KONSTRUCTS_APP_TITLE "Konstructs"
 #define MOUSE_CLICK_DELAY_IN_FRAMES 15
@@ -40,9 +41,22 @@ namespace konstructs {
 
         Konstructs(Settings settings);
         ~Konstructs();
+
+        /**
+         * Called by GLFW when the mouse scroll wheel is used.
+         */
         virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel);
+
+        /**
+         * Called by GLFW when a mouse button is pressed
+         */
         virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers);
+
+        /**
+         * Called by GLEW when a keyboard button is pressed
+         */
         virtual bool keyboardEvent(int key, int scancode, int action, int modifiers);
+
         virtual void draw(NVGcontext *ctx);
         virtual void drawContents();
 
@@ -52,27 +66,52 @@ namespace konstructs {
          *  used for both the debug screen and messages sent from the server.
          */
         void print_top_text();
+
+        /**
+         * Translate GLFW mouse button presses to 1 to 3
+         * @param button  The GLFW mouse button ID
+         */
         int translate_button(int button);
+
+        /**
+         * Update view distance variable dependent on your framerate.
+         */
         bool update_view_distance();
+
+        /**
+         * If view distance has updated, set a new view radius.
+         */
         void update_radius();
+
+        /**
+         * Manage the mouse pointer.
+         */
         void handle_mouse();
+
+        /**
+         * Manage the keyboard.
+         */
         void handle_keys();
+
+        /**
+         * Close the hud and send a message to the server.
+         */
         void close_hud();
-        void handle_network();
-        void handle_packet(konstructs::Packet *packet);
-        void handle_player_packet(const string &str);
-        void handle_other_player_packet(const string &str);
-        void handle_delete_other_player_packet(const string &str);
-        void handle_block_type(const string &str);
-        void handle_texture(konstructs::Packet *packet);
-        void handle_belt(const string &str);
-        void handle_inventory(const string &str);
-        void handle_held_stack(const string &str);
-        void handle_time(const string &str);
+
+        /**
+         * Returns the time of day
+         */
         float time_of_day();
+
+        /**
+         * TODO: What do this?
+         */
         float daylight();
+
+        /**
+         * Open and display the nanogui main menu
+         */
         void show_menu(int state, string message);
-        void setup_connection();
 
         BlockTypeInfo blocks;
         CrosshairShader crosshair_shader;
@@ -87,7 +126,6 @@ namespace konstructs {
         HudShader hud_shader;
         PlayerShader *player_shader;
         ChunkModelFactory model_factory;
-        Client client;
         Player player;
         Vector3i player_chunk;
         optional<pair<konstructs::Block, konstructs::Block>> looking_at;
@@ -105,6 +143,7 @@ namespace konstructs {
         double frame_time;
         uint32_t click_delay;
         Settings settings;
+        Network network;
     };
 };
 
