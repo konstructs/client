@@ -5,14 +5,14 @@
 
 #include <nanogui/glutil.h>
 #include <iostream>
-#include <konstructs.h>
 #include "platform.h"
 #include "cli.h"
+#include "gui.h"
 
 using namespace konstructs;
 
 void glfw_error(int error_code, const char *error_string) {
-    cout << "GLFW Error[" << error_code << "]: " << error_string << endl;
+    std::cout << "GLFW Error[" << error_code << "]: " << error_string << std::endl;
 }
 
 int main(int argc, char **argv) {
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
         nanogui::init();
 
         {
-            nanogui::ref<Konstructs> app = new Konstructs(settings);
+            nanogui::ref<GUI> app = new GUI(settings);
             app->drawAll();
             app->setVisible(true);
             nanogui::mainloop();

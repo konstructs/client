@@ -1,6 +1,7 @@
-
 #ifndef KONSTRUCTS_CLI_H
 #define KONSTRUCTS_CLI_H
+
+#include "settings.h"
 
 namespace konstructs {
 
