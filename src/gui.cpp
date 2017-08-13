@@ -26,10 +26,29 @@ GUI::GUI(Settings settings) :
 }
 
 bool GUI::scrollEvent(const Vector2i &p, const Vector2f &rel) {
-    // TODO
+    konstructs_data.hud.scroll(rel[1]);
 }
 
 bool GUI::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {
+    if (konstructs_data.hud.get_interactive()) {
+        if (down) {
+            double x, y;
+            glfwGetCursorPos(mGLFWWindow, &x, &y);
+
+            auto clicked_at = konstructs_data.hud_shader.clicked_at(x, y, mSize.x(), mSize.y());
+
+            if (clicked_at) {
+                Vector2i pos = *clicked_at;
+                if (konstructs_data.hud.active(pos)) {
+                    int index = pos[0] + pos[1] * 17;
+                    network.get_client()->click_inventory(index, translate_button(button));
+                }
+            }
+        }
+    } else if (!menu_state) {
+        // Clicking at the window captures the mouse pointer
+        glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
     return nanogui::Screen::mouseButtonEvent(p, button, down, modifiers);
 }
 
@@ -109,5 +128,16 @@ bool GUI::connect() {
     } else {
         show_menu(KONSTRUCTS_GUI_MENU_RECONNECT, "Error: Connection failed");
         return false;
+    }
+}
+
+int GUI::translate_button(int button) {
+    switch (button) {
+        case GLFW_MOUSE_BUTTON_1:
+            return 1;
+        case GLFW_MOUSE_BUTTON_2:
+            return 2;
+        case GLFW_MOUSE_BUTTON_3:
+            return 3;
     }
 }

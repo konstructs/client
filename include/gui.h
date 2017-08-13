@@ -71,6 +71,12 @@ namespace konstructs {
          */
         bool connect();
 
+        /**
+         * Translate GLFW mouse button presses to 1 to 3
+         * @param button  The GLFW mouse button ID
+         */
+        int translate_button(int button);
+
         bool menu_state;
         Settings settings;
         Network network;

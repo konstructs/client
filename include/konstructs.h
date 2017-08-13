@@ -64,18 +64,16 @@ namespace konstructs {
         virtual void draw(NVGcontext *ctx);
         virtual void drawContents();
 
+        // Members that are called from gui.cpp
+        Hud hud;
+        HudShader hud_shader;
+
     private:
 
         /** This function uses nanovg to print text on top of the screen. This is
          *  used for both the debug screen and messages sent from the server.
          */
         void print_top_text();
-
-        /**
-         * Translate GLFW mouse button presses to 1 to 3
-         * @param button  The GLFW mouse button ID
-         */
-        int translate_button(int button);
 
         /**
          * Update view distance variable dependent on your framerate.
@@ -127,13 +125,11 @@ namespace konstructs {
         SkyShader sky_shader;
         ChunkShader chunk_shader;
         SelectionShader selection_shader;
-        HudShader hud_shader;
         PlayerShader *player_shader;
         ChunkModelFactory model_factory;
         Player player;
         Vector3i player_chunk;
         optional<pair<konstructs::Block, konstructs::Block>> looking_at;
-        Hud hud;
         double px;
         double py;
         FPS fps;

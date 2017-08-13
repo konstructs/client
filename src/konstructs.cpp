@@ -46,34 +46,6 @@ Konstructs::~Konstructs() {
     delete player_shader;
 }
 
-bool Konstructs::scrollEvent(const Vector2i &p, const Vector2f &rel) {
-    hud.scroll(rel[1]);
-    return true;
-}
-
-bool Konstructs::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {
-    if (hud.get_interactive()) {
-        if (down) {
-            double x, y;
-            glfwGetCursorPos(mGLFWWindow, &x, &y);
-
-            auto clicked_at = hud_shader.clicked_at(x, y, mSize.x(), mSize.y());
-
-            if (clicked_at) {
-                Vector2i pos = *clicked_at;
-                if (hud.active(pos)) {
-                    int index = pos[0] + pos[1] * 17;
-                    network.get_client()->click_inventory(index, translate_button(button));
-                }
-            }
-        }
-    } else if (false) { // TODO !menu_state) {
-        // Clicking at the window captures the mouse pointer
-        glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    }
-    return nanogui::Screen::mouseButtonEvent(p, button, down, modifiers);
-}
-
 bool Konstructs::keyboardEvent(int key, int scancode, int action, int modifiers) {
     if (nanogui::Screen::keyboardEvent(key, scancode, action, modifiers)) {
         return true;
@@ -213,17 +185,6 @@ void Konstructs::print_top_text() {
     nvgTextBox(mNVGContext, 10, 20, width - 10, os.str().c_str(), NULL);
 }
 
-int Konstructs::translate_button(int button) {
-    switch (button) {
-        case GLFW_MOUSE_BUTTON_1:
-            return 1;
-        case GLFW_MOUSE_BUTTON_2:
-            return 2;
-        case GLFW_MOUSE_BUTTON_3:
-            return 3;
-    }
-}
-
 bool Konstructs::update_view_distance() {
     double frame_fps = 1.15 / frame_time;
     float fps = settings.client.frames_per_second;
@@ -250,7 +211,12 @@ void Konstructs::update_radius() {
     }
 }
 
+// TODO: Remove
+bool Konstructs::scrollEvent(const Vector2i &p, const Vector2f &rel) {}
+bool Konstructs::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {}
+
 void Konstructs::handle_mouse() {
+    /*
     int exclusive =
             glfwGetInputMode(mGLFWWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
     if (exclusive && (px || py)) {
@@ -314,6 +280,7 @@ void Konstructs::handle_mouse() {
     } else {
         glfwGetCursorPos(mGLFWWindow, &px, &py);
     }
+     */
 }
 
 void Konstructs::handle_keys() {
