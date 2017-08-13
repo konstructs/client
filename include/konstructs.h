@@ -138,7 +138,6 @@ namespace konstructs {
         double py;
         FPS fps;
         double last_frame;
-        bool menu_state;
         bool debug_text_enabled;
         nanogui::Window *window;
         uint32_t frame;

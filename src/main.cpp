@@ -8,7 +8,6 @@
 #include "platform.h"
 #include "cli.h"
 #include "gui.h"
-#include "konstructs.h"
 
 using namespace konstructs;
 
@@ -35,7 +34,6 @@ int main(int argc, char **argv) {
 
         {
             nanogui::ref<GUI> app = new GUI(settings);
-            Konstructs *app_data = new Konstructs(settings); // dead code, wip
             app->drawAll();
             app->setVisible(true);
             nanogui::mainloop();

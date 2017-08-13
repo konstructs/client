@@ -7,6 +7,7 @@
 #pragma GCC diagnostic pop
 
 #include "settings.h"
+#include "konstructs.h"
 
 using Eigen::Vector2i;
 using Eigen::Vector2f;
@@ -16,7 +17,6 @@ namespace konstructs {
 
     class GUI: public nanogui::Screen {
     public:
-
         GUI(Settings settings);
 
         /**
@@ -36,6 +36,13 @@ namespace konstructs {
 
         virtual void draw(NVGcontext *ctx);
         virtual void drawContents();
+
+    private:
+        void show_menu(int state, string message);
+
+        Konstructs konstructs_data;
+        bool menu_state;
+        Settings settings;
     };
 }
 

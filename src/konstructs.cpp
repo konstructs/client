@@ -25,22 +25,12 @@ Konstructs::Konstructs(Settings settings) :
         last_frame(glfwGetTime()),
         looking_at(nullopt),
         hud(17, 14, 9),
-        menu_state(false),
         debug_text_enabled(false),
         frame(0),
         click_delay(0),
         settings(settings),
         network(settings) {
-/*
-    using namespace nanogui;
-    performLayout(mNVGContext);
-    glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    Settings::Server server = settings.server;
-    if (server.username.size() > 0 && server.password.size() > 0 && server.address.size() > 0) {
-        network.setup_connection(server, mGLFWWindow);
-    } else {
-        show_menu(0, string("Connect to a server"));
-    }
+
     blocks.is_plant[SOLID_TYPE] = 0;
     blocks.is_obstacle[SOLID_TYPE] = 1;
     blocks.is_transparent[SOLID_TYPE] = 0;
@@ -50,7 +40,6 @@ Konstructs::Konstructs(Settings settings) :
     tinyobj::shape_t shape = load_player();
     player_shader = new PlayerShader(settings.client.field_of_view, PLAYER_TEXTURE, SKY_TEXTURE,
                                      near_distance, shape);
-    */
 }
 
 Konstructs::~Konstructs() {
@@ -78,7 +67,7 @@ bool Konstructs::mouseButtonEvent(const Vector2i &p, int button, bool down, int 
                 }
             }
         }
-    } else if (!menu_state) {
+    } else if (false) { // TODO !menu_state) {
         // Clicking at the window captures the mouse pointer
         glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
@@ -97,11 +86,6 @@ bool Konstructs::keyboardEvent(int key, int scancode, int action, int modifiers)
         }
     } else if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
         // TODO: implement this again when time has come ;)
-        /*if (!menu_state) {
-            show_menu("","","");
-        } else {
-            hide_menu();
-        }*/
     } else if (key == settings.keys.debug && action == GLFW_PRESS) {
         debug_text_enabled = !debug_text_enabled;
     } else if (key == settings.keys.fly
@@ -165,12 +149,12 @@ void Konstructs::drawContents() {
         }
         player_shader->render(player, mSize.x(), mSize.y(),
                               daylight(), time_of_day(), view_distance);
-        if (looking_at && !hud.get_interactive() && !menu_state) {
+        if (looking_at && !hud.get_interactive() && false) { // TODO !menu_state) {
             selection_shader.render(player, mSize.x(), mSize.y(),
                                     looking_at->second.position, view_distance);
         }
         glClear(GL_DEPTH_BUFFER_BIT);
-        if (!hud.get_interactive() && !menu_state) {
+        if (!hud.get_interactive() && false ) { // TODO !menu_state) {
             crosshair_shader.render(mSize.x(), mSize.y());
         }
         double mx, my;
@@ -178,8 +162,6 @@ void Konstructs::drawContents() {
         hud_shader.render(mSize.x(), mSize.y(), mx, my, hud, blocks);
         update_radius();
         print_top_text();
-    } else if (!menu_state) {
-        show_menu(2, network.get_client()->get_error_message());
     }
 }
 
@@ -406,55 +388,4 @@ float Konstructs::daylight() {
         float t = (timer - 0.85) * 100;
         return 1 - 1 / (1 + powf(2, -t));
     }
-}
-
-
-void Konstructs::show_menu(int state, string message) {
-    using namespace nanogui;
-
-    glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    glActiveTexture(GL_TEXTURE0);
-
-    FormHelper *gui = new FormHelper(this);
-    window = gui->addWindow({0, 0}, "Main Menu");
-    gui->setFixedSize({125, 20});
-
-    if (state == 1) {
-        // Popup message
-
-        auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Server connection", message);
-    } else if (state == 2) {
-        // Popup message with connect/cancel buttons.
-
-        auto dlg = new MessageDialog(this, MessageDialog::Type::Warning,
-                                     "Server connection", message,
-                                     "Reconnect", "Cancel", true);
-        dlg->setCallback([&](int result) {
-            if (result == 0) {
-                window->dispose();
-                menu_state = false;
-                network.setup_connection(settings.server, mGLFWWindow);
-            }
-        });
-    }
-
-    gui->addVariable("Server address", settings.server.address);
-    gui->addVariable("Username", settings.server.username);
-    gui->addVariable("Password", settings.server.password);
-    gui->addButton("Connect", [&]() {
-        if (settings.server.username != "" &&
-            settings.server.password != "" &&
-            settings.server.address != "") {
-            // Note: The mouse pointer is intentionally not locked here.
-            // See: setup_connection()
-            window->dispose();
-            menu_state = false;
-            network.setup_connection(settings.server, mGLFWWindow);
-            save_settings(settings);
-        }
-    });
-
-    window->center();
-    performLayout(mNVGContext);
-    menu_state = true;
 }
