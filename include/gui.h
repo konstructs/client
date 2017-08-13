@@ -65,8 +65,15 @@ namespace konstructs {
          */
         void show_pointer(bool state);
 
+        /**
+         * Connect to the server, this is a convenience method wrapping
+         * network.setup_connection(..).
+         */
+        bool connect();
+
         bool menu_state;
         Settings settings;
+        Network network;
         nanogui::Window *window;
     };
 }

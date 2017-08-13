@@ -45,7 +45,7 @@ namespace konstructs {
                             PlayerShader *player_shader,
                             Vector3i player_chunk,
                             BlockTypeInfo blocks);
-        void setup_connection(Settings::Server server, GLFWwindow *mGLFWWindow);
+        bool setup_connection(Settings::Server server, GLFWwindow *mGLFWWindow);
         Client* get_client();
 
     private:

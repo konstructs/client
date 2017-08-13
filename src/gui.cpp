@@ -11,13 +11,14 @@ GUI::GUI(Settings settings) :
                "Konstructs"),
         konstructs_data(settings),
         menu_state(false),
-        settings(settings) {
+        settings(settings),
+        network(settings) {
 
     performLayout(mNVGContext);
     show_pointer(false);
     Settings::Server server = settings.server;
     if (server.username.size() > 0 && server.password.size() > 0 && server.address.size() > 0) {
-        //network.setup_connection(server, mGLFWWindow);
+        connect();
     } else {
         show_menu(KONSTRUCTS_GUI_MENU_NORMAL, string("Connect to a server"));
     }
@@ -68,7 +69,7 @@ void GUI::show_menu(int state, string message) {
             if (result == 0) {
                 window->dispose();
                 menu_state = false;
-                //network.setup_connection(settings.server, mGLFWWindow);
+                connect();
             }
         });
     }
@@ -80,12 +81,11 @@ void GUI::show_menu(int state, string message) {
         if (settings.server.username != "" &&
             settings.server.password != "" &&
             settings.server.address != "") {
-            // Note: The mouse pointer is intentionally not locked here.
-            // See: setup_connection()
             window->dispose();
             menu_state = false;
-            // network.setup_connection(settings.server, mGLFWWindow);
-            save_settings(settings);
+            if (connect()) {
+                save_settings(settings);
+            }
         }
     });
 
@@ -99,5 +99,15 @@ void GUI::show_pointer(bool state) {
         glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     } else {
         glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+}
+
+bool GUI::connect() {
+    if (network.setup_connection(settings.server, mGLFWWindow)) {
+        show_pointer(false);
+        return true;
+    } else {
+        show_menu(KONSTRUCTS_GUI_MENU_RECONNECT, "Error: Connection failed");
+        return false;
     }
 }

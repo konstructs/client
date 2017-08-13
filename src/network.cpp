@@ -231,19 +231,18 @@ void Network::handle_time(const string &str) {
     glfwSetTime((double) time_value);
 }
 
-void Network::setup_connection(Settings::Server server, GLFWwindow *mGLFWWindow) {
+bool Network::setup_connection(Settings::Server server, GLFWwindow *mGLFWWindow) {
     try {
         client.open_connection(server);
+        /* TODO: We do not really know if the server accepted our protocol
+                 version, or our username/password combo here. set_connected
+                 will release a lock and start to receive data, and fail. */
         load_textures();
         client.set_connected(true);
-
-        // Lock the mouse _after_ a successful connection. This prevents the
-        // player to get stuck if he or she connects to a server that drops
-        // the SYN.
-        glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        return true;
     } catch (const std::exception &ex) {
-        // show_menu(1, client.get_error_message()); TODO: fix this
         std::cerr << client.get_error_message() << std::endl;
+        return false;
     }
 }
 
