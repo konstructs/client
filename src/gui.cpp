@@ -14,12 +14,12 @@ GUI::GUI(Settings settings) :
         settings(settings) {
 
     performLayout(mNVGContext);
-    //glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    show_pointer(false);
     Settings::Server server = settings.server;
     if (server.username.size() > 0 && server.password.size() > 0 && server.address.size() > 0) {
         //network.setup_connection(server, mGLFWWindow);
     } else {
-        show_menu(0, string("Connect to a server"));
+        show_menu(KONSTRUCTS_GUI_MENU_NORMAL, string("Connect to a server"));
     }
 
 }
@@ -29,7 +29,7 @@ bool GUI::scrollEvent(const Vector2i &p, const Vector2f &rel) {
 }
 
 bool GUI::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {
-    // TODO
+    return nanogui::Screen::mouseButtonEvent(p, button, down, modifiers);
 }
 
 bool GUI::keyboardEvent(int key, int scancode, int action, int modifiers) {
@@ -47,18 +47,18 @@ void GUI::drawContents() {
 void GUI::show_menu(int state, string message) {
     using namespace nanogui;
 
-    glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    show_pointer(true);
     glActiveTexture(GL_TEXTURE0);
 
     FormHelper *gui = new FormHelper(this);
-    Window *window = gui->addWindow({0, 0}, "Main Menu");
+    window = gui->addWindow({0, 0}, "Main Menu");
     gui->setFixedSize({125, 20});
 
-    if (state == 1) {
+    if (state == KONSTRUCTS_GUI_MENU_POPUP) {
         // Popup message
 
         auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Server connection", message);
-    } else if (state == 2) {
+    } else if (state == KONSTRUCTS_GUI_MENU_RECONNECT) {
         // Popup message with connect/cancel buttons.
 
         auto dlg = new MessageDialog(this, MessageDialog::Type::Warning,
@@ -85,11 +85,19 @@ void GUI::show_menu(int state, string message) {
             window->dispose();
             menu_state = false;
             // network.setup_connection(settings.server, mGLFWWindow);
-            // save_settings(settings);
+            save_settings(settings);
         }
     });
 
     window->center();
     performLayout(mNVGContext);
     menu_state = true;
+}
+
+void GUI::show_pointer(bool state) {
+    if (state) {
+        glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    } else {
+        glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
 }

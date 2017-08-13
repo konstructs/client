@@ -13,6 +13,10 @@ using Eigen::Vector2i;
 using Eigen::Vector2f;
 using nanogui::Screen;
 
+#define KONSTRUCTS_GUI_MENU_NORMAL 0
+#define KONSTRUCTS_GUI_MENU_POPUP 1
+#define KONSTRUCTS_GUI_MENU_RECONNECT 2
+
 namespace konstructs {
 
     class GUI: public nanogui::Screen {
@@ -38,11 +42,32 @@ namespace konstructs {
         virtual void drawContents();
 
     private:
+
+        /**
+         * Display the main menu
+         * @param state     KONSTRUCTS_GUI_MENU_NORMAL = No extra popups
+         *                  KONSTRUCTS_GUI_MENU_POPUP = A popup message
+         *                  KONSTRUCTS_GUI_MENU_RECONNECT = Server connection retry dialog
+         * @param message   A message to be displayed
+         */
         void show_menu(int state, string message);
 
+        /**
+         * Holds various konstructs data like for example shaders
+         * and the chunk processing facility. This is mainly here
+         * for legacy reasons and may be removed in the future.
+         */
         Konstructs konstructs_data;
+
+        /**
+         * Show or hide the mouse pointer.
+         * @param state     Mouse pointer state
+         */
+        void show_pointer(bool state);
+
         bool menu_state;
         Settings settings;
+        nanogui::Window *window;
     };
 }
 
