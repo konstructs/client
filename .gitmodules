@@ -13,3 +13,9 @@
 [submodule "dependencies/glfw"]
 	path = dependencies/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "dependencies/glew"]
+	path = dependencies/glew
+	url = https://github.com/nigels-com/glew.git
+[submodule "dependencies/eigen"]
+	path = dependencies/eigen
+	url = https://github.com/libigl/eigen.git
