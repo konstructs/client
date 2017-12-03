@@ -1,5 +1,4 @@
 
-#include <nanogui/nanogui.h>
 #if defined(WIN32)
     #define _WINSOCKAPI_
     #include <windows.h>
@@ -7,10 +6,10 @@
 #else
     #include <arpa/inet.h>
 #endif
-#include <nanogui/glutil.h>
 #include <iostream>
 #include <iomanip>
 #include <memory>
+#include "GLFW/glfw3.h"
 #include "tiny_obj_loader.h"
 #include "optional.hpp"
 #include "matrix.h"
@@ -44,12 +43,9 @@ void print_usage();
 
 void glfw_error(int error_code, const char *error_string);
 
-class Konstructs: public nanogui::Screen {
+class Konstructs {
 public:
-    Konstructs(Settings settings) :
-        nanogui::Screen(Eigen::Vector2i(settings.client.window_width,
-                                        settings.client.window_height),
-                        KONSTRUCTS_APP_TITLE),
+    Konstructs(Settings settings, GLFWwindow* mGLFWWindow) :
         player(0, Vector3f(0.0f, 0.0f, 0.0f), 0.0f, 0.0f),
         px(0), py(0),
         model_factory(blocks),
@@ -72,8 +68,6 @@ public:
         click_delay(0),
         settings(settings) {
 
-        using namespace nanogui;
-        performLayout(mNVGContext);
         glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         Settings::Server server = settings.server;
         if (server.username.size() > 0 && server.password.size() > 0 && server.address.size() > 0) {
@@ -121,7 +115,7 @@ public:
             // Clicking at the window captures the mouse pointer
             glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
-        return Screen::mouseButtonEvent(p, button, down, modifiers);
+        // TODO return Screen::mouseButtonEvent(p, button, down, modifiers);
     }
 
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
@@ -168,12 +162,7 @@ public:
         return true;
     }
 
-    virtual void draw(NVGcontext *ctx) {
-        Screen::draw(ctx);
-    }
-
     virtual void drawContents() {
-        using namespace nanogui;
         update_fps(&fps);
         frame++;
         if (client.is_connected()) {
@@ -215,52 +204,8 @@ public:
 
 private:
 
-    /** This function uses nanovg to print text on top of the screen. This is
-     *  used for both the debug screen and messages sent from the server.
-     */
     void print_top_text() {
-        int width, height;
-        glfwGetFramebufferSize(mGLFWWindow, &width, &height);
-
-        ostringstream os;
-        if (debug_text_enabled) {
-            double frame_fps = 1.15 / frame_time;
-            os << std::fixed << std::setprecision(2);
-            os << "Server: " << settings.server.address
-               << " user: " << settings.server.username
-               << " x: " << player.position(0)
-               << " y: " << player.position(1)
-               << " z: " << player.position(2)
-               << std::endl;
-            if(looking_at) {
-                auto l = *looking_at;
-                uint8_t direction = direction_from_vector(l.first.position, l.second.position);
-                uint8_t rotation = rotation_from_vector(direction, player.camera_direction());
-                os << "Pointing at x: " << l.second.position(0) << ", "
-                   << "y: " << l.second.position(1) << ", "
-                   << "z: " << l.second.position(2) << ", "
-                   << "dir: " << direction_to_string[direction] << ", "
-                   << "rot: " << rotation_to_string[rotation]
-                   << std::endl;
-            } else {
-                os << "Pointing at nothing." << std::endl;
-            }
-            os << "View distance: " << view_distance << " (" << radius << "/" << client.get_loaded_radius() << ") "
-               << "faces: " << faces << "(" << max_faces << ") "
-               << "FPS: " << fps.fps << "(" << frame_fps << ")" << endl;
-            os << "Chunks: " << world.size() << " "
-               << "models: " << chunk_shader.size() << endl;
-            os << "Model factory, waiting: " << model_factory.waiting() << " "
-               << "created: " << model_factory.total_created() << " "
-               << "empty: " << model_factory.total_empty() << " "
-               << "total: " <<  model_factory.total() << endl;
-
-        }
-
-        glActiveTexture(GL_TEXTURE0);
-        nvgFontBlur(mNVGContext, 0.8f);
-        nvgFontSize(mNVGContext, 20.0f);
-        nvgTextBox(mNVGContext, 10, 20, width - 10, os.str().c_str(), NULL);
+        // Dummy
     }
 
     int translate_button(int button) {
@@ -642,65 +587,7 @@ private:
 
 
     void show_menu(int state, string message) {
-        using namespace nanogui;
-
-        glfwSetInputMode(mGLFWWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        glActiveTexture(GL_TEXTURE0);
-
-        FormHelper *gui = new FormHelper(this);
-        window = gui->addWindow({0,0}, "Main Menu");
-        gui->setFixedSize({125, 20});
-
-        if (state == 1) {
-            // Popup message
-
-            auto dlg = new MessageDialog(this, MessageDialog::Type::Warning, "Server connection", message);
-        } else if (state == 2) {
-            // Popup message with connect/cancel buttons.
-
-            auto dlg = new MessageDialog(this, MessageDialog::Type::Warning,
-                                         "Server connection", message,
-                                         "Reconnect", "Cancel", true);
-            dlg->setCallback([&](int result) {
-                if (result == 0) {
-                    window->dispose();
-                    menu_state = false;
-                    setup_connection();
-                }
-            });
-        }
-
-        #if defined(KONSTRUCTS_SINGLE_PLAYER)
-        gui->addGroup("Singleplayer game");
-        gui->addButton("Play", [&]() {
-            settings.server.username = "singleplayer";
-            settings.server.password = "singleplayer";
-            settings.server.address = "localhost";
-            window->dispose();
-            menu_state = false;
-            setup_connection();
-        });
-        gui->addGroup("Multiplayer");
-        #endif
-        gui->addVariable("Server address", settings.server.address);
-        gui->addVariable("Username", settings.server.username);
-        gui->addVariable("Password", settings.server.password);
-        gui->addButton("Connect", [&]() {
-            if (settings.server.username != "" &&
-                    settings.server.password != "" &&
-                    settings.server.address != "") {
-                // Note: The mouse pointer is intentionally not locked here.
-                // See: setup_connection()
-                window->dispose();
-                menu_state = false;
-                setup_connection();
-                save_settings(settings);
-            }
-        });
-
-        window->center();
-        performLayout(mNVGContext);
-        menu_state = true;
+        // Dummy
     }
 
     void setup_connection() {
@@ -742,7 +629,6 @@ private:
     double last_frame;
     bool menu_state;
     bool debug_text_enabled;
-    nanogui::Window *window;
     uint32_t frame;
     uint32_t faces;
     uint32_t max_faces;
@@ -839,17 +725,11 @@ int main(int argc, char ** argv) {
     }
 
     try {
-        glfwSetErrorCallback(glfw_error);
-        nanogui::init();
-
-        {
-            nanogui::ref<Konstructs> app = new Konstructs(settings);
-            app->drawAll();
-            app->setVisible(true);
-            nanogui::mainloop();
+        if (!glfwInit()) {
+            glfwSetErrorCallback(glfw_error);
+            GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", NULL, NULL);
+            Konstructs* app = new Konstructs(settings, window);
         }
-
-        nanogui::shutdown();
     } catch (const std::runtime_error &e) {
         std::string error_msg = std::string("Caught a fatal error: ") + std::string(e.what());
         #if defined(WIN32)
