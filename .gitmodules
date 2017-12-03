@@ -1,6 +1,3 @@
-[submodule "dependencies/nanogui"]
-	path = dependencies/nanogui
-	url = https://github.com/konstructs/nanogui.git
 [submodule "dependencies/lodepng"]
 	path = dependencies/lodepng
 	url = https://github.com/lvandeve/lodepng.git
@@ -13,3 +10,12 @@
 [submodule "dependencies/simpleini"]
 	path = dependencies/simpleini
 	url = https://github.com/brofield/simpleini.git
+[submodule "dependencies/glfw"]
+	path = dependencies/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "dependencies/glew"]
+	path = dependencies/glew
+	url = https://github.com/nigels-com/glew.git
+[submodule "dependencies/eigen"]
+	path = dependencies/eigen
+	url = https://github.com/libigl/eigen.git

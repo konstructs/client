@@ -27,13 +27,9 @@ if(MSVC)
 endif()
 
 #-----------------------------------------------------------------------
-# Nano GUI
+# GLFW
 #-----------------------------------------------------------------------
-SET(GLFW_USE_OPTIMUS_HPG ON CACHE BOOL "Build glfw with HPG (High Performance Graphics) on windows")
-option(NANOGUI_BUILD_PYTHON OFF)
-option(NANOGUI_BUILD_EXAMPLE OFF)
-option(NANOGUI_BUILD_SHARED OFF)
-add_subdirectory(dependencies/nanogui)
+set(GLFW_USE_OPTIMUS_HPG ON CACHE BOOL "Build glfw with HPG (High Performance Graphics) on windows")
 
 #-----------------------------------------------------------------------
 # Konstructs lib
@@ -43,16 +39,13 @@ add_subdirectory(lib)
 #-----------------------------------------------------------------------
 # Misc
 #-----------------------------------------------------------------------
-
 set(CMAKE_BUILD_TYPE Debug)
-
 find_package(ZLIB REQUIRED)
+
 include_directories(
-  dependencies/nanogui/include
-  dependencies/nanogui/ext/glfw/include
-  dependencies/nanogui/ext/glew/include
-  dependencies/nanogui/ext/eigen
-  dependencies/nanogui/ext/nanovg/src
+  dependencies/glfw/include
+  dependencies/glew/include
+  dependencies/eigen
   dependencies/optional-lite
   dependencies/tinyobjloader
   lib/include)
@@ -66,7 +59,6 @@ add_executable(konstructs ${SOURCE_FILES})
 set(konstructs_LIBS
     konstructs-lib
     ${ZLIB_LIBRARIES}
-    nanogui ${NANOGUI_EXTRA_LIBS}
 	glfw
 )
 
