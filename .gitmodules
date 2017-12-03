@@ -10,3 +10,6 @@
 [submodule "dependencies/simpleini"]
 	path = dependencies/simpleini
 	url = https://github.com/brofield/simpleini.git
+[submodule "dependencies/glfw"]
+	path = dependencies/glfw
+	url = https://github.com/glfw/glfw.git
