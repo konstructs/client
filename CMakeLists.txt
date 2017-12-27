@@ -55,7 +55,8 @@ include_directories(
   dependencies/nanogui/ext/nanovg/src
   dependencies/optional-lite
   dependencies/tinyobjloader
-  lib/include)
+  lib/include
+  include)
 
 FILE(
   GLOB SOURCE_FILES
